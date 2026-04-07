@@ -234,6 +234,7 @@ def test():
     df_hourly = pd.read_csv(os.path.join(LIFESNAPS_PATH, files['hourly']))
     df_hourly = df_hourly[columns['hourly']].copy()
     df_hourly["date"] = pd.to_datetime(df_hourly["date"]).dt.date
+    # incomplete
 
 
 
