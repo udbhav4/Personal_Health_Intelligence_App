@@ -993,7 +993,7 @@ def load_studentlife():
         dark_df['end_num']   = pd.to_numeric(dark_df['end'],   errors='coerce')
         dark_df['start_dt']  = pd.to_datetime(dark_df['start_num'], unit='s')
 
-        # Daily dark_minutes — no quality filter
+        # Daily dark_minutes
         dark_daily = dark_df.groupby(['uid', 'date']).apply(
             lambda g: deduplicate_intervals(g, 'start', 'end')
         ).reset_index()
@@ -1029,7 +1029,7 @@ def load_studentlife():
         night_active_df = night_active_df[['uid', 'date', 'nighttime_active_minutes']]
 
         # Per-window dark_window_minutes using clip_intervals_to_window
-        # Dark sensor stores real readings for ALL slots — day and night.
+        # Dark sensor stores real readings for all slots — day and night.
         dark_window_rows = []
         for (uid, date_obj), grp in dark_df.groupby(['uid', 'date']):
             intervals = [
@@ -1048,7 +1048,7 @@ def load_studentlife():
                 })
         dark_window_df = pd.DataFrame(dark_window_rows)
 
-        # Merge with all_windows_base: dead windows → NaN, alive+no-dark → 0.
+        # Merge with all_windows_base: dead windows → NaN, alive + no-dark → 0.
         dark_full = all_windows_base.merge(dark_window_df, on=['uid', 'date', 'window_start'], how='left')
         _alive_mask = pd.Series(
             [(u, int(w)) in all_alive_windows for u, w in zip(dark_full['uid'], dark_full['w_start_unix'])],
@@ -1127,7 +1127,7 @@ def load_studentlife():
                 })
         lock_window_df = pd.DataFrame(lock_window_rows)
 
-        # Merge with all_windows_base: dead windows → NaN, alive+no-unlock → 0.
+        # Merge with all_windows_base: dead windows → NaN, alive + no-unlock → 0.
         lock_full = all_windows_base.merge(lock_window_df, on=['uid', 'date', 'window_start'], how='left')
         _alive_mask = pd.Series(
             [(u, int(w)) in all_alive_windows for u, w in zip(lock_full['uid'], lock_full['w_start_unix'])],
@@ -1168,7 +1168,7 @@ def load_studentlife():
             screen_base['unlocked_window_minutes'] = np.nan
 
         hour_series = screen_base['window_start'].dt.hour
-        is_night    = (hour_series >= 21) | (hour_series < 7)
+        is_night    = (hour_series >= 20) | (hour_series < 4)
 
         def _screen_time(row):
             dark_m   = row['dark_window_minutes']
@@ -1498,14 +1498,9 @@ def load_studentlife():
         merged = merged.merge(df, on=join_keys, how='left')
     print(f"Windowed merged shape: {merged.shape}")
 
-    # ── time_of_day label derived from window_start hour ──────────────────────
-    _hour = pd.to_datetime(merged['window_start']).dt.hour
-    merged['time_of_day'] = pd.cut(
-        _hour,
-        bins=[-1, 6, 9, 12, 17, 21, 24],
-        labels=['late_night', 'early_morning', 'late_morning', 'afternoon', 'evening', 'night'],
-        right=False,
-    ).astype(str).replace('nan', np.nan)
+    # ── window_start → hour (0-23) ───────────────────────────────────────────
+    merged['window_start'] = pd.to_datetime(merged['window_start']).dt.hour
+    merged = merged.rename(columns={'window_start': 'hour'})
 
     # ── PHASE 11: Next day Carry-forward ─────────────────────────────────────
     # Daily values from day D shifted to day D+1 as prev_* columns.
@@ -1555,8 +1550,8 @@ def load_studentlife():
     mood_cf_cols = [c for c in ['mood_happy', 'mood_sad', 'mood_how'] if c in merged.columns]
     if mood_cf_cols:
         mood_last = (
-            merged[['uid', 'date', 'window_start'] + mood_cf_cols]
-            .sort_values(['uid', 'date', 'window_start'])
+            merged[['uid', 'date', 'hour'] + mood_cf_cols]
+            .sort_values(['uid', 'date', 'hour'])
             .groupby(['uid', 'date'])[mood_cf_cols]
             .last()
             .reset_index()
@@ -1569,8 +1564,8 @@ def load_studentlife():
     exercise_cf_cols = [c for c in ['exercise_type', 'exercise_have', 'exercise_walk'] if c in merged.columns]
     if exercise_cf_cols:
         exercise_last = (
-            merged[['uid', 'date', 'window_start'] + exercise_cf_cols]
-            .sort_values(['uid', 'date', 'window_start'])
+            merged[['uid', 'date', 'hour'] + exercise_cf_cols]
+            .sort_values(['uid', 'date', 'hour'])
             .groupby(['uid', 'date'])[exercise_cf_cols]
             .last()
             .reset_index()
@@ -1582,8 +1577,8 @@ def load_studentlife():
     # Productivity carry-forward — last recorded value of the day shifted to next day.
     if 'productivity' in merged.columns:
         prod_last = (
-            merged[['uid', 'date', 'window_start', 'productivity']]
-            .sort_values(['uid', 'date', 'window_start'])
+            merged[['uid', 'date', 'hour', 'productivity']]
+            .sort_values(['uid', 'date', 'hour'])
             .groupby(['uid', 'date'])[['productivity']]
             .last()
             .reset_index()
@@ -1595,8 +1590,8 @@ def load_studentlife():
     # Stress EMA carry-forward — last recorded value of the day shifted to next day.
     if 'stress_ema_level' in merged.columns:
         stress_last = (
-            merged[['uid', 'date', 'window_start', 'stress_ema_level']]
-            .sort_values(['uid', 'date', 'window_start'])
+            merged[['uid', 'date', 'hour', 'stress_ema_level']]
+            .sort_values(['uid', 'date', 'hour'])
             .groupby(['uid', 'date'])[['stress_ema_level']]
             .last()
             .reset_index()
@@ -1656,8 +1651,7 @@ def load_studentlife():
     }
 
     sensing_labels = {
-        'window_start':                        'Fixed W-minute window open boundary (datetime, midnight-anchored)',
-        'time_of_day':                         'Time-of-day label for window_start hour: late_night(0-6), early_morning(6-9), late_morning(9-12), afternoon(12-17), evening(17-21), night(21-24)',
+        'hour':                                'Beginning hour of the window (0-23, midnight-anchored)',
         'sedentary_ratio':                     'Proportion of window spent stationary (accelerometer — unknowns excluded)',
         'active_ratio':                        'Proportion of window spent walking or running (accelerometer — unknowns excluded)',
         'dark_window_minutes':                 'Dark sensor minutes within this window (all hours; NaN only in dead windows)',
