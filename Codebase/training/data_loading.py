@@ -6,9 +6,10 @@ import re
 import json
 
 
-BASE             = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE             = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 NHANES_PATH      = os.path.join(BASE, 'datasets', 'NHANES')
 STUDENTLIFE_PATH = os.path.join(BASE, 'datasets', 'studentlife', 'dataset')
+LIFESNAPS_PATH   = os.path.join(BASE, 'datasets', 'lifesnaps', 'rais_anonymized', 'csv_rais_anonymized')
 
 # ── ROLLING WINDOW CONFIG ─────────────────────────────────────────────────────
 # W controls the granularity of all sensor aggregations.
@@ -18,11 +19,7 @@ STUDENTLIFE_PATH = os.path.join(BASE, 'datasets', 'studentlife', 'dataset')
 WINDOW_MINUTES = 60
 
 # EMA definition JSON — maps question_id to question_text for all EMA folders.
-EMA_DEF_PATH = r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\studentlife\dataset\EMA\EMA_definition.json'
-
-# Output paths
-# NHANES_OUT_PATH      = r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\nhanes_self'
-# STUDENTLIFE_OUT_PATH = r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\studentlife_self'
+EMA_DEF_PATH = r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife\dataset\EMA\EMA_definition.json'
 
 
 ## HELPER FUNCTIONS ##
@@ -273,9 +270,9 @@ def clean_nhanes(df, all_labels):
     print(report[report['remaining_count'] > 0].to_string())
 
     labels_df = pd.DataFrame(list(all_labels.items()), columns=['column','label'])
-    labels_df.to_csv(r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\nhanes_self\nhanes_column_labels.csv', index=False)
+    labels_df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\nhanes_self\nhanes_column_labels.csv', index=False)
 
-    df.to_csv(r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\nhanes_self\nhanes_merged_cleaned.csv', index=False)
+    df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\nhanes_self\nhanes_merged_cleaned.csv', index=False)
     print(f"\nSaved nhanes_merged_cleaned.csv | Shape: {df.shape}")
     return df
 # -----------------------------------------------------------------------------
@@ -665,7 +662,7 @@ def load_surveys(survey_path):
     for df in [pss, psqi, panas, lonely, vr, bigfive]:
         survey_merged = survey_merged.merge(df, on='uid', how='outer')
 
-    survey_merged.to_csv(r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_surveys.csv', index=False)
+    survey_merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_surveys.csv', index=False)
     print(f"\nSurvey merged shape: {survey_merged.shape}")
     print("Saved to studentlife_surveys.csv")
     return survey_merged, survey_labels
@@ -1698,11 +1695,153 @@ def load_studentlife():
             all_studentlife_labels[col] = col
 
     labels_df = pd.DataFrame(list(all_studentlife_labels.items()), columns=['column', 'label'])
-    labels_df.to_csv(r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_column_labels.csv', index=False)
+    labels_df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_column_labels.csv', index=False)
     print("Saved studentlife_column_labels.csv")
 
-    merged.to_csv(r'C:\Users\udbha\OneDrive\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_daily_and_surveys.csv', index=False)
+    merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_daily_and_surveys.csv', index=False)
     print("Saved to studentlife_daily_and_surveys.csv")
+    return merged
+# -----------------------------------------------------------------------------
+
+
+## LIFESNAPS ##
+
+LIFESNAPS_COLS = [
+    'id', 'date', 'hour',
+    'steps', 'bpm',
+    'age', 'gender', 'bmi',
+    'ALERT', 'HAPPY', 'NEUTRAL', 'RESTED/RELAXED',
+    'SAD', 'TENSE/ANXIOUS', 'TIRED',
+]
+
+LIFESNAPS_EMA_COLS   = ['ALERT', 'HAPPY', 'NEUTRAL', 'RESTED/RELAXED', 'SAD', 'TENSE/ANXIOUS', 'TIRED']
+LIFESNAPS_CARRY_COLS = ['hourly_ALERT', 'hourly_HAPPY', 'hourly_NEUTRAL', 'hourly_RESTED/RELAXED',
+                        'hourly_SAD', 'hourly_TENSE/ANXIOUS', 'hourly_TIRED']
+
+LIFESNAPS_RENAME = {
+    'steps'          : 'hourly_steps',
+    'bpm'            : 'hourly_bpm',
+    'age'            : 'hourly_age',
+    'gender'         : 'hourly_gender',
+    'bmi'            : 'hourly_bmi',
+    'ALERT'          : 'hourly_ALERT',
+    'HAPPY'          : 'hourly_HAPPY',
+    'NEUTRAL'        : 'hourly_NEUTRAL',
+    'RESTED/RELAXED' : 'hourly_RESTED/RELAXED',
+    'SAD'            : 'hourly_SAD',
+    'TENSE/ANXIOUS'  : 'hourly_TENSE/ANXIOUS',
+    'TIRED'          : 'hourly_TIRED',
+}
+
+def load_lifesnaps_hourly():
+    fpath = os.path.join(LIFESNAPS_PATH, 'hourly_fitbit_sema_df_unprocessed.csv')
+    hourly = pd.read_csv(fpath, low_memory=False)[LIFESNAPS_COLS]
+
+    hourly['date'] = pd.to_datetime(hourly['date']).dt.date
+    hourly = hourly.rename(columns=LIFESNAPS_RENAME)
+    hourly = hourly.sort_values(['id', 'date', 'hour']).reset_index(drop=True)
+
+    hourly[LIFESNAPS_CARRY_COLS] = hourly.groupby(['id', 'date'])[LIFESNAPS_CARRY_COLS].ffill()
+
+    return hourly
+
+
+LIFESNAPS_DAILY_COLS = [
+    'id', 'date',
+    'nightly_temperature', 'spo2', 'stress_score', 'daily_temperature_variation',
+    'bpm', 'lightly_active_minutes', 'moderately_active_minutes',
+    'very_active_minutes', 'sedentary_minutes', 'scl_avg', 'resting_hr',
+    'minutesAsleep', 'steps', 'age', 'gender', 'bmi',
+    'ALERT', 'HAPPY', 'NEUTRAL', 'RESTED/RELAXED', 'SAD', 'TENSE/ANXIOUS', 'TIRED',
+]
+
+LIFESNAPS_DAILY_RENAME = {
+    'nightly_temperature'        : 'prev_night_temperature',
+    'spo2'                       : 'prev_night_spo2',
+    'stress_score'               : 'daily_stress_score',
+    'daily_temperature_variation': 'prev_night_temp_variation',
+    'bpm'                        : 'daily_bpm',
+    'scl_avg'                    : 'daily_scl_avg',
+    'resting_hr'                 : 'prev_night_resting_hr',
+    'minutesAsleep'              : 'prev_night_minutesAsleep',
+    'steps'                      : 'daily_steps',
+    'age'                        : 'daily_age',
+    'gender'                     : 'daily_gender',
+    'bmi'                        : 'daily_bmi',
+    'ALERT'                      : 'daily_ALERT',
+    'HAPPY'                      : 'daily_HAPPY',
+    'NEUTRAL'                    : 'daily_NEUTRAL',
+    'RESTED/RELAXED'             : 'daily_RESTED/RELAXED',
+    'SAD'                        : 'daily_SAD',
+    'TENSE/ANXIOUS'              : 'daily_TENSE/ANXIOUS',
+    'TIRED'                      : 'daily_TIRED',
+}
+
+
+def load_lifesnaps_daily():
+    fpath = os.path.join(LIFESNAPS_PATH, 'daily_fitbit_sema_df_unprocessed.csv')
+    daily = pd.read_csv(fpath, usecols=LIFESNAPS_DAILY_COLS)
+
+    daily['date'] = pd.to_datetime(daily['date']).dt.date
+
+    activity_cols = ['lightly_active_minutes', 'moderately_active_minutes',
+                     'very_active_minutes', 'sedentary_minutes']
+    daily[activity_cols] = daily[activity_cols].fillna(0)
+    daily['daily_active_ratio']    = (
+        (daily['lightly_active_minutes'] + daily['moderately_active_minutes'] + daily['very_active_minutes'])
+        / 1440
+    ).clip(0, 1)
+    daily['daily_sedentary_ratio'] = 1 - daily['daily_active_ratio'] # Done because when a person removes the fitbit, they generally remove it when they are not moving much (sedentary time).
+    daily.drop(columns=activity_cols, inplace=True)
+
+    daily = daily.rename(columns=LIFESNAPS_DAILY_RENAME)
+    daily = daily.sort_values(['id', 'date']).reset_index(drop=True)
+
+    return daily
+
+
+# Columns to coalesce: daily wins, hourly fills gaps → renamed to today_*
+LIFESNAPS_COALESCE_COLS = ['age', 'gender', 'bmi',
+                            'ALERT', 'HAPPY', 'NEUTRAL', 'RESTED/RELAXED',
+                            'SAD', 'TENSE/ANXIOUS', 'TIRED']
+LIFESNAPS_PREV_DAY_COLS     = ['daily_stress_score', 'daily_bpm', 'daily_scl_avg', 'daily_steps']
+LIFESNAPS_PREV_DAY_EMA_COLS = ['daily_ALERT', 'daily_HAPPY', 'daily_NEUTRAL', 'daily_RESTED/RELAXED',
+                                'daily_SAD', 'daily_TENSE/ANXIOUS', 'daily_TIRED']
+
+def load_lifesnaps():
+    hourly = load_lifesnaps_hourly()
+    daily  = load_lifesnaps_daily()
+
+    # Build prev_day_* by shifting each id's daily values forward by one day
+    all_shift_cols = LIFESNAPS_PREV_DAY_COLS + LIFESNAPS_PREV_DAY_EMA_COLS
+    prev_day = daily[['id', 'date'] + all_shift_cols].copy()
+    prev_day = prev_day.sort_values(['id', 'date'])
+    prev_day[all_shift_cols] = prev_day.groupby('id')[all_shift_cols].shift(1)
+    prev_day = prev_day.rename(columns={c: c.replace('daily_', 'prev_day_') for c in all_shift_cols})
+
+    # Broadcast daily columns onto every hourly row; join prev_day separately
+    merged = hourly.merge(daily, on=['id', 'date'], how='left')
+    merged = merged.merge(prev_day, on=['id', 'date'], how='left')
+
+    # Drop only cols that were shifted + replaced (not EMA — those stay as daily_*)
+    merged.drop(columns=LIFESNAPS_PREV_DAY_COLS, inplace=True)
+
+    # Coalesce: daily wins, hourly fills gaps → today_*
+    for col in LIFESNAPS_COALESCE_COLS:
+        if col not in ['age', 'gender', 'bmi']:
+            daily_col  = f'daily_{col}'
+            hourly_col = f'hourly_{col}'
+            merged[f'today_{col}'] = merged[daily_col].combine_first(merged[hourly_col])
+            merged.drop(columns=[daily_col, hourly_col], inplace=True)
+        # age, gender and bmi should not be named like today_*.
+        else:
+            daily_col  = f'daily_{col}'
+            hourly_col = f'hourly_{col}'
+            merged[col] = merged[daily_col].combine_first(merged[hourly_col])
+            merged.drop(columns=[daily_col, hourly_col], inplace=True)
+
+    merged = merged.sort_values(['id', 'date', 'hour']).reset_index(drop=True)
+    merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\lifesnaps_self\lifesnaps_final.csv', index=False)
     return merged
 
 
@@ -1714,6 +1853,9 @@ if __name__ == '__main__':
     # StudentLife
     studentlife_final = load_studentlife()
 
+    # LifeSnaps merged
+    lifesnaps_final = load_lifesnaps()
+
     # Print final column list for both datasets
     print("\n" + "="*60)
     print("FINAL COLUMN LIST")
@@ -1724,4 +1866,6 @@ if __name__ == '__main__':
     print(f"\nStudentLife columns ({len(studentlife_final.columns)}):")
     for col in studentlife_final.columns:
         print(f"  {col}")
-    print(f"\nTotal unique columns across both: {len(set(nhanes_final.columns) | set(studentlife_final.columns))}")
+    print(f"\nLifeSnaps columns ({len(lifesnaps_final.columns)}):")
+    for col in lifesnaps_final.columns:
+        print(f"  {col}")
