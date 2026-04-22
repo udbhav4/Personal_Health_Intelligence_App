@@ -37,10 +37,14 @@ def unix_to_date(ts):
         return np.nan
 
 def parse_numeric(val):
-    # Handles messy numeric entries like "6-8 hours", "approx 5", "6", etc.
+    # Handles messy numeric entries like "6-8 hours", "approx 5", "7:30", "6", etc.
     if pd.isna(val):
         return np.nan
     val = str(val).lower().strip()
+    # HH:MM format → decimal hours before stripping letters
+    hhmm = re.match(r'^(\d+):(\d{2})', val)
+    if hhmm:
+        return float(hhmm.group(1)) + float(hhmm.group(2)) / 60
     val = re.sub(r'[a-zA-Z]', '', val).strip()
     # For ranges like "6-8" - take mean.
     if '-' in val:
@@ -232,27 +236,35 @@ def clean_nhanes(df, all_labels):
     all_labels['EDUCATION'] = 'Education level — merged from DMDEDUC2 (adults 20+) and DMDEDUC3 (youth 6-19)'
     print(f"Education columns merged into EDUCATION.")
 
-    # Under-20 marital status = 0 (not applicable for minors)
-    df['DMDMARTL'] = df.apply(
-        lambda row: 0 if pd.isna(row['DMDMARTL']) and row['RIDAGEYR'] < 20
-        else row['DMDMARTL'], axis=1
-    )
-    print(f"Under-20 marital status filled with 0.")
+    # Under-20 marital status → 5 ("Never married"); NHANES skips question for under-20
+    df.loc[df['DMDMARTL'].isna() & (df['RIDAGEYR'] < 20), 'DMDMARTL'] = 5
+    print("Under-20 marital status filled with 5 (Never married).")
 
     # INDHHIN2 is integer category 1-12 representing USD annual income ranges — not a raw dollar value.
     all_labels['INDHHIN2'] = 'Annual household income — integer category 1-12 representing USD ranges (1=under $5,000, 12=$100,000+)'
 
-    # Condition-based zero filling for conditional skip columns.
-    # Only fill 0 when the parent question is explicitly answered as No (coded as 2 in NHANES).
-    # If parent is NaN (not asked), child stays NaN for EM — do NOT fill 0 in that case.
-    df.loc[df['SMQ020'] == 2, ['SMQ040','SMD641','SMD650']] = 0   # never smoked
-    df.loc[df['SMQ040'] == 3, ['SMD641','SMD650']]          = 0   # smokes not at all currently
-    df.loc[df['ALQ111'] == 2, ['ALQ121','ALQ130','ALQ142']] = 0   # never had a drink
-    df.loc[df['PAQ605'] == 2, ['PAQ610','PAD615']]          = 0   # no vigorous work activity
-    df.loc[df['PAQ620'] == 2, ['PAD630']]                   = 0   # no moderate work activity
-    df.loc[df['PAQ635'] == 2, ['PAD645']]                   = 0   # no walking or cycling
-    df.loc[df['PAQ650'] == 2, ['PAD660']]                   = 0   # no vigorous recreational activity
-    print(f"Conditional skip columns filled with 0 only where parent confirmed No (coded as 2).")
+    # Condition-based filling for conditional skip columns.
+    # Only fill when the parent question is explicitly answered as No (coded as 2 in NHANES).
+    # If parent is NaN (not asked), child stays NaN for EM — do NOT fill in that case.
+    # SMQ040 uses code 3 ("not at all") — 0 is not a valid NHANES code for this column.
+    # All other child columns are numeric counts/durations where 0 is the correct "none" value.
+    never_smoked       = df['SMQ020'] == 2
+    not_smoking_now    = df['SMQ040'] == 3
+    never_drank        = df['ALQ111'] == 2
+    no_vigorous_work   = df['PAQ605'] == 2
+    no_moderate_work   = df['PAQ620'] == 2
+    no_walk_cycle      = df['PAQ635'] == 2
+    no_vigorous_rec    = df['PAQ650'] == 2
+
+    df.loc[never_smoked,     'SMQ040']                      = 3   # "not at all"
+    df.loc[never_smoked,     ['SMD641', 'SMD650']]          = 0   # 0 days, 0 cigarettes
+    df.loc[not_smoking_now,  ['SMD641', 'SMD650']]          = 0   # 0 days, 0 cigarettes
+    df.loc[never_drank,      ['ALQ121', 'ALQ130', 'ALQ142']]= 0   # 0 frequency, 0 drinks
+    df.loc[no_vigorous_work, ['PAQ610', 'PAD615']]          = 0   # 0 days, 0 minutes
+    df.loc[no_moderate_work, 'PAD630']                      = 0   # 0 minutes
+    df.loc[no_walk_cycle,    'PAD645']                      = 0   # 0 minutes
+    df.loc[no_vigorous_rec,  'PAD660']                      = 0   # 0 minutes
+    print("Conditional skip columns filled using column-specific codes where parent confirmed No.")
 
     # Compute BMI from height (inches) and weight (pounds).
     # WHD010 and WHD020 retained — at runtime user is asked height and weight separately.
@@ -479,20 +491,15 @@ def load_surveys(survey_path):
     survey_labels.update({v: k for k, v in phq_rename.items()})
     print(f"  PHQ-9: {phq.shape}")
 
-    # PSS: all 10 items kept. pss_total removed — same multicollinearity reason as phq_total.
-    # PSS items scored 0-4 (never → very often).
-    # Items 4, 5, 7, 8 are positively worded — higher score = LESS stressed. Must reverse.
-    # Reversal formula on 0-4 scale: reversed = 4 - value.
-    # After reversal all items consistently read: higher = more stressed.
+    # PSS: all 10 items kept in raw form (no reversal applied here).
+    # Subscale split is handled in data_preprocessing_studentslife.py:
+    #   pss_helplessness  — items 1,2,3,6,9,10 (negatively worded, 0-4 each, higher = more stressed)
+    #   pss_self_efficacy — items 4,5,7,8 (positively worded, 0-4 each, higher = more in control)
     # pss = pd.read_csv(os.path.join(survey_path, 'PerceivedStressScale.csv'))
     pss = encoded['PerceivedStressScale']
     non_meta   = [c for c in pss.columns if c not in ['uid','type']]
     pss_rename = {col: f'pss_{i+1}' for i, col in enumerate(non_meta)}
     pss = pss.rename(columns=pss_rename)
-    # Reverse score positively worded items (4, 5, 7, 8) on 0-4 scale
-    for col in ['pss_4','pss_5','pss_7','pss_8']:
-        if col in pss.columns:
-            pss[col] = 4 - pss[col]
     pss_item_cols = list(pss_rename.values())
     pss = pss[['uid'] + pss_item_cols].groupby('uid').mean().reset_index()
     survey_labels.update({f'pss_{i+1}': col for i, col in enumerate(non_meta)})
@@ -520,6 +527,8 @@ def load_surveys(survey_path):
     for col in ['sleep_hours','sleep_latency_mins']:
         if col in psqi.columns:
             psqi[col] = psqi[col].apply(parse_numeric)
+    if 'sleep_hours' in psqi.columns:
+        psqi.loc[psqi['sleep_hours'] > 24, 'sleep_hours'] = np.nan
     existing_psqi_cols = [c for c in psqi_rename.values() if c in psqi.columns]
     psqi = psqi[['uid'] + existing_psqi_cols].groupby('uid').mean().reset_index()
     survey_labels.update({v: k for k, v in psqi_rename.items()})
