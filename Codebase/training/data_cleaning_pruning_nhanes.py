@@ -1,13 +1,16 @@
 import os
 import pandas as pd
 import numpy as np
+from utils import nan_audit, vif_from_corr_matrix
 
 BASE = r'C:\Users\udbha\Documents\VS Code\MedApp\datasets'
 
-NHANES_PATH = os.path.join(BASE, 'nhanes_self', 'nhanes_merged_cleaned.csv')
+NHANES_PATH = os.path.join(BASE, 'data_loaded_cleaned', 'nhanes_self', 'nhanes_merged_cleaned.csv')
 
 
 def load_nhanes() -> pd.DataFrame:
+    if not os.path.exists(NHANES_PATH):
+        raise FileNotFoundError(f'NHANES file not found: {NHANES_PATH}')
     return pd.read_csv(NHANES_PATH)
 
 
@@ -108,19 +111,6 @@ def _nullify_negatives(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _nan_audit(df: pd.DataFrame, label: str) -> pd.DataFrame:
-    n = len(df)
-    audit = (
-        df.isnull().sum()
-          .rename('null_count')
-          .to_frame()
-    )
-    audit['null_pct'] = (audit['null_count'] / n * 100).round(2)
-    audit.index.name = 'column'
-    audit = audit[audit['null_count'] > 0].sort_values('null_pct', ascending=False)
-    print(f'\n--- NaN audit: {label} ({n} rows) ---')
-    print(audit.to_string())
-    return audit
 
 
 def clean_nhanes(df: pd.DataFrame) -> pd.DataFrame:
@@ -129,7 +119,7 @@ def clean_nhanes(df: pd.DataFrame) -> pd.DataFrame:
     df = _nullify_impossible_nhanes(df)
     df = df[df['RIDAGEYR'] >= 18].reset_index(drop=True)
     df = _nullify_negatives(df)
-    _nan_audit(df, 'NHANES post-clean')
+    nan_audit(df, 'NHANES post-clean')
     return df
 
 
@@ -168,16 +158,6 @@ _CORR_FLAG  = 0.70   # flag for attention
 _CORR_PRUNE = 0.85   # strong statistical redundancy candidate
 
 
-def _vif_from_corr_matrix(corr_matrix: pd.DataFrame) -> dict:
-    """VIF_i = diagonal of (C^-1) where C is the correlation matrix."""
-    cols = corr_matrix.columns.tolist()
-    try:
-        C_inv = np.linalg.inv(corr_matrix.values.astype(float))
-        return {col: round(float(C_inv[i, i]), 2) for i, col in enumerate(cols)}
-    except np.linalg.LinAlgError:
-        return {col: np.nan for col in cols}
-
-
 def nhanes_redundancy_report(df: pd.DataFrame) -> None:
     """Print per-node Pearson r matrix + VIF for all NHANES node groups."""
     print(f'\n{"="*65}')
@@ -192,7 +172,7 @@ def nhanes_redundancy_report(df: pd.DataFrame) -> None:
         sub = df[present].apply(pd.to_numeric, errors='coerce')
         complete = sub.dropna()
         corr = sub.corr().abs()
-        vifs = _vif_from_corr_matrix(corr)
+        vifs = vif_from_corr_matrix(corr)
         print(f'\n[{node}]  ({len(present)} cols, {len(complete)} fully-complete rows)')
         print('  VIF:')
         for col, v in vifs.items():
@@ -302,7 +282,7 @@ def prune_nhanes(df: pd.DataFrame) -> pd.DataFrame:
     scope_drops = ['SEQN', 'RIDRETH3', 'INDHHIN2', 'WHD010', 'WHD020']
     df = df.drop(columns=[c for c in stat_drops + scope_drops if c in df.columns])
 
-    _nan_audit(df, 'NHANES post-prune')
+    nan_audit(df, 'NHANES post-prune')
     return df
 
 
@@ -407,7 +387,7 @@ _NHANES_LABELS = [
 
 _NHANES_LABELS_COLS = ['column', 'node', 'origin', 'description', 'raw_scale', 'state_labels']
 
-NHANES_LABELS_PATH = os.path.join(BASE, 'nhanes_self', 'nhanes_final_labels.csv')
+NHANES_LABELS_PATH = os.path.join(BASE, 'data_loaded_cleaned', 'nhanes_self', 'nhanes_final_labels.csv')
 
 
 def save_nhanes_labels() -> pd.DataFrame:

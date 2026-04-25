@@ -1,28 +1,17 @@
 import os
 import pandas as pd
 import numpy as np
+from utils import nan_audit, vif_from_corr_matrix
 
 BASE = r'C:\Users\udbha\Documents\VS Code\MedApp\datasets'
-STUDENTLIFE_PATH = os.path.join(BASE, 'studentlife_self', 'studentlife_daily_and_surveys.csv')
+STUDENTLIFE_PATH = os.path.join(BASE, 'data_loaded_cleaned', 'studentlife_self', 'studentlife_daily_and_surveys.csv')
 
 
 def load_studentlife() -> pd.DataFrame:
+    if not os.path.exists(STUDENTLIFE_PATH):
+        raise FileNotFoundError(f'StudentLife file not found: {STUDENTLIFE_PATH}')
     return pd.read_csv(STUDENTLIFE_PATH)
 
-
-def _nan_audit(df: pd.DataFrame, label: str) -> pd.DataFrame:
-    n = len(df)
-    audit = (
-        df.isnull().sum()
-          .rename('null_count')
-          .to_frame()
-    )
-    audit['null_pct'] = (audit['null_count'] / n * 100).round(2)
-    audit.index.name = 'column'
-    audit = audit[audit['null_count'] > 0].sort_values('null_pct', ascending=False)
-    print(f'\n--- NaN audit: {label} ({n} rows) ---')
-    print(audit.to_string())
-    return audit
 
 
 # ---------------------------------------------------------------------------
@@ -32,7 +21,7 @@ def _nan_audit(df: pd.DataFrame, label: str) -> pd.DataFrame:
 def clean_studentlife(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df.loc[df['sleep_hours'] > 24, 'sleep_hours'] = np.nan
-    _nan_audit(df, 'StudentLife post-clean')
+    nan_audit(df, 'StudentLife post-clean')
     return df
 
 
@@ -124,15 +113,6 @@ _CORR_FLAG  = 0.70
 _CORR_PRUNE = 0.85
 
 
-def _vif_from_corr_matrix(corr_matrix: pd.DataFrame) -> dict:
-    """VIF_i = diagonal of (C^-1) where C is the correlation matrix."""
-    cols = corr_matrix.columns.tolist()
-    try:
-        C_inv = np.linalg.inv(corr_matrix.values.astype(float))
-        return {col: round(float(C_inv[i, i]), 2) for i, col in enumerate(cols)}
-    except np.linalg.LinAlgError:
-        return {col: np.nan for col in cols}
-
 
 def studentlife_redundancy_report(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -150,7 +130,7 @@ def studentlife_redundancy_report(df: pd.DataFrame) -> pd.DataFrame:
             continue
         sub  = df[present].apply(pd.to_numeric, errors='coerce')
         corr = sub.corr().abs()
-        vifs = _vif_from_corr_matrix(corr)
+        vifs = vif_from_corr_matrix(corr)
         print(f'\n[{node}]')
         for col, v in vifs.items():
             flag = '  *** HIGH' if isinstance(v, float) and v > 5 else ''
@@ -353,7 +333,7 @@ def prune_studentlife(df: pd.DataFrame) -> pd.DataFrame:
     df = _merge_sl_vr12(df)
     df = _merge_sl_sleep_disturbances(df)
 
-    _nan_audit(df, 'StudentLife post-prune')
+    nan_audit(df, 'StudentLife post-prune')
     return df
 
 

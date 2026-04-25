@@ -282,9 +282,9 @@ def clean_nhanes(df, all_labels):
     print(report[report['remaining_count'] > 0].to_string())
 
     labels_df = pd.DataFrame(list(all_labels.items()), columns=['column','label'])
-    labels_df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\nhanes_self\nhanes_column_labels.csv', index=False)
+    labels_df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\data_loaded_cleaned\nhanes_self\nhanes_column_labels.csv', index=False)
 
-    df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\nhanes_self\nhanes_merged_cleaned.csv', index=False)
+    df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\data_loaded_cleaned\nhanes_self\nhanes_merged_cleaned.csv', index=False)
     print(f"\nSaved nhanes_merged_cleaned.csv | Shape: {df.shape}")
     return df
 # -----------------------------------------------------------------------------
@@ -671,7 +671,7 @@ def load_surveys(survey_path):
     for df in [pss, psqi, panas, lonely, vr, bigfive]:
         survey_merged = survey_merged.merge(df, on='uid', how='outer')
 
-    survey_merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_surveys.csv', index=False)
+    survey_merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\data_loaded_cleaned\studentlife_self\studentlife_surveys.csv', index=False)
     print(f"\nSurvey merged shape: {survey_merged.shape}")
     print("Saved to studentlife_surveys.csv")
     return survey_merged, survey_labels
@@ -1704,10 +1704,10 @@ def load_studentlife():
             all_studentlife_labels[col] = col
 
     labels_df = pd.DataFrame(list(all_studentlife_labels.items()), columns=['column', 'label'])
-    labels_df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_column_labels.csv', index=False)
+    labels_df.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\data_loaded_cleaned\studentlife_self\studentlife_column_labels.csv', index=False)
     print("Saved studentlife_column_labels.csv")
 
-    merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife_self\studentlife_daily_and_surveys.csv', index=False)
+    merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\data_loaded_cleaned\studentlife_self\studentlife_daily_and_surveys.csv', index=False)
     print("Saved to studentlife_daily_and_surveys.csv")
     return merged
 # -----------------------------------------------------------------------------
@@ -1850,7 +1850,7 @@ def load_lifesnaps():
             merged.drop(columns=[daily_col, hourly_col], inplace=True)
 
     merged = merged.sort_values(['id', 'date', 'hour']).reset_index(drop=True)
-    merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\lifesnaps_self\lifesnaps_final.csv', index=False)
+    merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\data_loaded_cleaned\lifesnaps_self\lifesnaps_final.csv', index=False)
     return merged
 
 

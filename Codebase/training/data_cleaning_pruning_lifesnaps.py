@@ -1,28 +1,17 @@
 import os
 import pandas as pd
 import numpy as np
+from utils import nan_audit, vif_from_corr_matrix
 
 BASE = r'C:\Users\udbha\Documents\VS Code\MedApp\datasets'
-LIFESNAPS_PATH = os.path.join(BASE, 'lifesnaps_self', 'lifesnaps_final.csv')
+LIFESNAPS_PATH = os.path.join(BASE, 'data_loaded_cleaned', 'lifesnaps_self', 'lifesnaps_final.csv')
 
 
 def load_lifesnaps() -> pd.DataFrame:
+    if not os.path.exists(LIFESNAPS_PATH):
+        raise FileNotFoundError(f'LifeSnaps file not found: {LIFESNAPS_PATH}')
     return pd.read_csv(LIFESNAPS_PATH, low_memory=False)
 
-
-def _nan_audit(df: pd.DataFrame, label: str) -> pd.DataFrame:
-    n = len(df)
-    audit = (
-        df.isnull().sum()
-          .rename('null_count')
-          .to_frame()
-    )
-    audit['null_pct'] = (audit['null_count'] / n * 100).round(2)
-    audit.index.name = 'column'
-    audit = audit[audit['null_count'] > 0].sort_values('null_pct', ascending=False)
-    print(f'\n--- NaN audit: {label} ({n} rows) ---')
-    print(audit.to_string())
-    return audit
 
 
 # ---------------------------------------------------------------------------
@@ -52,7 +41,7 @@ def clean_lifesnaps(df: pd.DataFrame) -> pd.DataFrame:
     # Normalise column names: lowercase, replace '/' and spaces with '_'
     df.columns = [c.replace('/', '_').replace(' ', '_').lower() for c in df.columns]
 
-    _nan_audit(df, 'LifeSnaps post-clean')
+    nan_audit(df, 'LifeSnaps post-clean')
     return df
 
 
@@ -82,15 +71,6 @@ _CORR_FLAG  = 0.70
 _CORR_PRUNE = 0.85
 
 
-def _vif_from_corr_matrix(corr_matrix: pd.DataFrame) -> dict:
-    """VIF_i = diagonal of (C^-1) where C is the correlation matrix."""
-    cols = corr_matrix.columns.tolist()
-    try:
-        C_inv = np.linalg.inv(corr_matrix.values.astype(float))
-        return {col: round(float(C_inv[i, i]), 2) for i, col in enumerate(cols)}
-    except np.linalg.LinAlgError:
-        return {col: np.nan for col in cols}
-
 
 def lifesnaps_redundancy_report(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -108,7 +88,7 @@ def lifesnaps_redundancy_report(df: pd.DataFrame) -> pd.DataFrame:
             continue
         sub  = df[present].apply(pd.to_numeric, errors='coerce')
         corr = sub.corr().abs()
-        vifs = _vif_from_corr_matrix(corr)
+        vifs = vif_from_corr_matrix(corr)
         print(f'\n[{node}]  ({len(present)} cols)')
         for col, v in vifs.items():
             flag = '  *** HIGH' if isinstance(v, float) and v > 5 else ''
@@ -163,7 +143,7 @@ def prune_lifesnaps(df: pd.DataFrame) -> pd.DataFrame:
     ] + _LS_MOOD_COLS
 
     df = df.drop(columns=[c for c in drops if c in df.columns])
-    _nan_audit(df, 'LifeSnaps post-prune')
+    nan_audit(df, 'LifeSnaps post-prune')
     return df
 
 
