@@ -7,10 +7,10 @@ import matplotlib.patches as mpatches
 import networkx as nx
 
 CONFIG_PATH = os.path.join(
-    os.path.dirname(__file__), '..', '..', 'configs', 'feature_node_config.json'
+    os.path.dirname(__file__), '..', '..', '..', 'configs', 'feature_node_config.json'
 )
 OUTPUT_PATH = os.path.join(
-    os.path.dirname(__file__), '..', '..', 'configs', 'dbn_graph.png'
+    os.path.dirname(__file__), '..', '..', '..', 'configs', 'dbn_graph.png'
 )
 
 CATEGORY_COLORS = {

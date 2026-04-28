@@ -27,7 +27,7 @@ Output:
 import os, json
 import pandas as pd
 
-_ROOT   = os.path.join(os.path.dirname(__file__), '..', '..')
+_ROOT   = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 _CONFIG = os.path.join(_ROOT, 'configs', 'feature_node_config.json')
 _PROC   = os.path.join(_ROOT, 'datasets', 'data_preprocessed')
 _INTER  = os.path.join(_ROOT, 'datasets', 'data_preprocessed', 'intermediate_use_files')

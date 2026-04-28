@@ -29,7 +29,7 @@ from itertools import product
 
 import pandas as pd
 
-_ROOT        = os.path.join(os.path.dirname(__file__), '..', '..')
+_ROOT        = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 _CONFIG      = os.path.join(_ROOT, 'configs', 'feature_node_config.json')
 _NHANES_DISC = os.path.join(_ROOT, 'datasets', 'data_preprocessed',
                             'nhanes_discretized.csv')

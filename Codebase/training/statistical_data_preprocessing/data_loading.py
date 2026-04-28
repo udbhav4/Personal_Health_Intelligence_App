@@ -6,7 +6,7 @@ import re
 import json
 
 
-BASE             = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE             = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 NHANES_PATH      = os.path.join(BASE, 'datasets', 'NHANES')
 STUDENTLIFE_PATH = os.path.join(BASE, 'datasets', 'studentlife', 'dataset')
 LIFESNAPS_PATH   = os.path.join(BASE, 'datasets', 'lifesnaps', 'rais_anonymized', 'csv_rais_anonymized')
@@ -19,7 +19,7 @@ LIFESNAPS_PATH   = os.path.join(BASE, 'datasets', 'lifesnaps', 'rais_anonymized'
 WINDOW_MINUTES = 60
 
 # EMA definition JSON — maps question_id to question_text for all EMA folders.
-EMA_DEF_PATH = r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\studentlife\dataset\EMA\EMA_definition.json'
+EMA_DEF_PATH = os.path.join(STUDENTLIFE_PATH, 'EMA', 'EMA_definition.json')
 
 
 ## HELPER FUNCTIONS ##
@@ -180,10 +180,14 @@ def build_ema_label_map(ema_def_path):
         label_map = {}
         for folder in ema_def:
             for q in folder['questions']:
-                qid   = q.get('question_id', '')
-                qtext = q.get('question_text', '').strip()
+                qid     = q.get('question_id', '')
+                qtext   = q.get('question_text', '').strip()
+                options = q.get('options', '').strip()
                 if qid and qid != 'location':
-                    label_map[qid] = qtext if qtext else f'EMA question_id: {qid}'
+                    label = qtext if qtext else f'EMA question_id: {qid}'
+                    if options:
+                        label = f'{label}  Options: {options}'
+                    label_map[qid] = label
         return label_map
     except Exception as e:
         print(f"  Warning: could not load EMA definition JSON: {e}")
@@ -487,7 +491,8 @@ def load_surveys(survey_path):
         'Thoughts that you would be better off dead, or of hurting yourself':                                                                                                                    'phq_death',
     }
     phq = phq.rename(columns=phq_rename)
-    phq = phq[['uid'] + list(phq_rename.values())].groupby('uid').mean().reset_index()
+    phq = phq[['uid', 'type'] + list(phq_rename.values())].groupby(['uid', 'type']).last().reset_index()
+    phq = phq.rename(columns={'type': 'survey_period'})
     survey_labels.update({v: k for k, v in phq_rename.items()})
     print(f"  PHQ-9: {phq.shape}")
 
@@ -501,7 +506,8 @@ def load_surveys(survey_path):
     pss_rename = {col: f'pss_{i+1}' for i, col in enumerate(non_meta)}
     pss = pss.rename(columns=pss_rename)
     pss_item_cols = list(pss_rename.values())
-    pss = pss[['uid'] + pss_item_cols].groupby('uid').mean().reset_index()
+    pss = pss[['uid', 'type'] + pss_item_cols].groupby(['uid', 'type']).last().reset_index()
+    pss = pss.rename(columns={'type': 'survey_period'})
     survey_labels.update({f'pss_{i+1}': col for i, col in enumerate(non_meta)})
     print(f"  PSS: {pss.shape}")
 
@@ -530,7 +536,8 @@ def load_surveys(survey_path):
     if 'sleep_hours' in psqi.columns:
         psqi.loc[psqi['sleep_hours'] > 24, 'sleep_hours'] = np.nan
     existing_psqi_cols = [c for c in psqi_rename.values() if c in psqi.columns]
-    psqi = psqi[['uid'] + existing_psqi_cols].groupby('uid').mean().reset_index()
+    psqi = psqi[['uid', 'type'] + existing_psqi_cols].groupby(['uid', 'type']).last().reset_index()
+    psqi = psqi.rename(columns={'type': 'survey_period'})
     survey_labels.update({v: k for k, v in psqi_rename.items()})
     print(f"  PSQI: {psqi.shape}")
 
@@ -566,7 +573,8 @@ def load_surveys(survey_path):
     existing_panas = {k: v for k, v in panas_rename.items() if k in panas.columns}
     panas = panas.rename(columns=existing_panas)
     kept_panas_cols = list(dict.fromkeys([v for v in existing_panas.values() if v in panas.columns]))
-    panas = panas[['uid'] + kept_panas_cols].groupby('uid').mean().reset_index()
+    panas = panas[['uid', 'type'] + kept_panas_cols].groupby(['uid', 'type']).last().reset_index()
+    panas = panas.rename(columns={'type': 'survey_period'})
     survey_labels.update({v: k for k, v in existing_panas.items()})
     print(f"  PANAS: {panas.shape}")
 
@@ -580,7 +588,8 @@ def load_surveys(survey_path):
     lonely_cols = [c for c in lonely.columns if c not in ['uid','type']]
     lonely_rename = {col: f'lonely_{i+1}' for i, col in enumerate(lonely_cols)}
     lonely = lonely.rename(columns=lonely_rename)
-    lonely = lonely[['uid'] + list(lonely_rename.values())].groupby('uid').mean().reset_index()
+    lonely = lonely[['uid', 'type'] + list(lonely_rename.values())].groupby(['uid', 'type']).last().reset_index()
+    lonely = lonely.rename(columns={'type': 'survey_period'})
     # UCLA Loneliness Scale — positively worded items need reversal on 1-4 scale (reversed = 5 - value).
     # Positively worded items (higher original score = LESS lonely — must flip):
     # Items 1,4,5,6,9,10,15,16,19,20 based on standard UCLA-R scoring manual.
@@ -617,7 +626,8 @@ def load_surveys(survey_path):
     existing_vr = {k: v for k, v in vr_rename.items() if k in vr.columns}
     vr = vr.rename(columns=existing_vr)
     kept_vr_cols = [v for v in existing_vr.values() if v in vr.columns]
-    vr = vr[['uid'] + kept_vr_cols].groupby('uid').mean().reset_index()
+    vr = vr[['uid', 'type'] + kept_vr_cols].groupby(['uid', 'type']).last().reset_index()
+    vr = vr.rename(columns={'type': 'survey_period'})
     # VR-12 reverse scoring — make all items consistent: higher = worse health/more limitation.
     # vr_moderate_activity, vr_climb_stairs: 1=limited a lot, 3=not limited → higher=better → reverse (4 - value)
     for col in ['vr_moderate_activity','vr_climb_stairs']:
@@ -658,7 +668,8 @@ def load_surveys(survey_path):
         'I see myself as someone who...   - 39. Gets nervous easily':                     'n_nervous'
     }
     bigfive = bigfive.rename(columns=bigfive_rename)
-    bigfive = bigfive[['uid'] + list(bigfive_rename.values())].groupby('uid').mean().reset_index()
+    bigfive = bigfive[['uid', 'type'] + list(bigfive_rename.values())].groupby(['uid', 'type']).last().reset_index()
+    bigfive = bigfive.rename(columns={'type': 'survey_period'})
     # Reverse score items — on 1-5 scale, reversed = 6 - value
     for col in ['n_stable_r','e_reserved_r','e_quiet_r']:
         if col in bigfive.columns:
@@ -666,10 +677,12 @@ def load_surveys(survey_path):
     survey_labels.update({v: k for k, v in bigfive_rename.items()})
     print(f"  BigFive: {bigfive.shape}")
 
-    # ── MERGE ALL SURVEYS on uid ──────────────────────────────
+    # ── MERGE ALL SURVEYS on uid + survey_period ─────────────
+    # Each survey DataFrame has (uid, survey_period, ...) from the pre/post split.
+    # Merging on uid alone would produce a cartesian cross (pre×post = 4 rows/user).
     survey_merged = phq
     for df in [pss, psqi, panas, lonely, vr, bigfive]:
-        survey_merged = survey_merged.merge(df, on='uid', how='outer')
+        survey_merged = survey_merged.merge(df, on=['uid', 'survey_period'], how='outer')
 
     survey_merged.to_csv(r'C:\Users\udbha\Documents\VS Code\MedApp\datasets\data_loaded_cleaned\studentlife_self\studentlife_surveys.csv', index=False)
     print(f"\nSurvey merged shape: {survey_merged.shape}")
@@ -697,7 +710,7 @@ def load_studentlife():
     # Their timestamps confirm a window is alive even if behavioural sensors are silent.
     # Activity is also a validator: its timestamps feed alive_windows AND produce features.
     print("Building alive windows from validator sensors...")
-    validator_timestamps = {}   # uid → list of int unix timestamps
+    validator_timestamps = {}   # uid → list of numpy int64 arrays (concatenated + sorted later)
     validator_folders = ['activity', 'wifi', 'bluetooth', 'gps', 'audio', 'conversation']
     for folder_name in validator_folders:
         folder_path = os.path.join(sensing_path, folder_name)
@@ -710,23 +723,22 @@ def load_studentlife():
             if not uid:
                 continue
             try:
-                df = pd.read_csv(os.path.join(folder_path, fname))
+                header = pd.read_csv(os.path.join(folder_path, fname), nrows=0)
                 ts_col = next(
-                    (c for c in ['timestamp', 'time', 'start', 'start_timestamp'] if c in df.columns), None
+                    (c for c in ['timestamp', 'time', 'start', 'start_timestamp'] if c in header.columns), None
                 )
                 if ts_col is None:
                     print(f"  Warning: no timestamp column in {folder_name}/{fname}")
                     continue
-                timestamps = (
-                    pd.to_numeric(df[ts_col], errors='coerce')
-                    .dropna().astype(int).tolist()
-                )
-                validator_timestamps.setdefault(uid, []).extend(timestamps) # This is the ewhole motive of this block.
+                df = pd.read_csv(os.path.join(folder_path, fname), usecols=[ts_col])
+                ts_arr = pd.to_numeric(df[ts_col], errors='coerce').dropna().to_numpy(dtype=np.int64)
+                if len(ts_arr):
+                    validator_timestamps.setdefault(uid, []).append(ts_arr)  # This is the whole motive of this block.
             except Exception as e:
                 print(f"  Error loading validator {folder_name}/{fname}: {e}")
 
     for uid in validator_timestamps:
-        validator_timestamps[uid].sort()
+        validator_timestamps[uid] = np.sort(np.concatenate(validator_timestamps[uid]))
 
     validator_alive_windows = set()   # (uid, window_start_unix)
     for uid, sorted_ts in validator_timestamps.items():
@@ -737,6 +749,7 @@ def load_studentlife():
                 if lo < len(sorted_ts) and sorted_ts[lo] < w_end_unix:
                     validator_alive_windows.add((uid, w_start_unix))
     print(f"  Validator alive windows: {len(validator_alive_windows)}")
+    del validator_timestamps
 
     # ── PHASE 1: Load raw behavioural sensor data ─────────────────────────────
     # All behavioural sensors loaded into memory first so their timestamps can
@@ -1348,7 +1361,7 @@ def load_studentlife():
             resp_idx = 0
 
             for w_start_unix, w_end_unix, w_start_dt in slots:
-                # Collect all responses in [w_start, w_end); mean if multiple
+                # Collect all responses in [w_start, w_end); use latest if multiple
                 window_vals = {col: [] for col in value_cols}
                 while resp_idx < len(resp_list):
                     r_ts = resp_list[resp_idx]['_rts']
@@ -1362,7 +1375,7 @@ def load_studentlife():
                     resp_idx += 1
                 for col in value_cols:
                     if window_vals[col]:
-                        current[col] = np.mean(window_vals[col])
+                        current[col] = window_vals[col][-1]
 
                 row = {'uid': uid, 'date': date_obj, 'window_start': w_start_dt}
                 row.update(current)
@@ -1491,17 +1504,27 @@ def load_studentlife():
 
     # ── PHASE 10: Merge all windowed data ─────────────────────────────────────
     # DataFrames with window_start join on ['uid','date','window_start'].
-    # DataFrames without window_start (surveys) join on ['uid'].
+    # DataFrames with date join on ['uid','date'].
+    # Survey DataFrames (pre/post) join on ['uid','survey_period']:
+    #   pre  — user's first entry up to 2013-05-19
+    #   post — 2013-05-20 onwards
+    _POST_DATE = pd.Timestamp('2013-05-20').date()
     print("\nMerging all windowed data...")
     merged = all_windows_base[['uid','date','window_start']].copy()
+    merged['survey_period'] = merged['date'].apply(
+        lambda d: 'post' if pd.to_datetime(d).date() >= _POST_DATE else 'pre'
+    )
     for df in daily_dfs:
         if 'window_start' in df.columns:
             join_keys = ['uid', 'date', 'window_start']
         elif 'date' in df.columns:
-            join_keys = ['uid', 'date']   # daily-level df — broadcasts across all windows of that day
+            join_keys = ['uid', 'date']
+        elif 'survey_period' in df.columns:
+            join_keys = ['uid', 'survey_period']
         else:
-            join_keys = ['uid']           # survey-level df — broadcasts across all days for that uid
+            join_keys = ['uid']
         merged = merged.merge(df, on=join_keys, how='left')
+    merged = merged.drop(columns=['survey_period'])
     print(f"Windowed merged shape: {merged.shape}")
 
     # ── window_start → hour (0-23) ───────────────────────────────────────────
@@ -1620,11 +1643,15 @@ def load_studentlife():
     ] if c in merged.columns]
     merged.drop(columns=_drop_cols, inplace=True)
 
-    # ── PHASE 12: Surveys (one-time baseline per uid) ─────────────────────────
-    # load_surveys() and encode_survey_strings() are completely unchanged.
-    # Surveys join on uid and broadcast across all window rows for that uid.
+    # ── PHASE 12: Surveys (pre/post broadcast per uid) ────────────────────────
+    # Surveys have (uid, survey_period) — re-derive survey_period on merged before joining
+    # so each window row picks up only its matching pre or post survey row.
     surveys, survey_labels = load_surveys(survey_path)
-    merged = merged.merge(surveys, on='uid', how='left')
+    merged['survey_period'] = merged['date'].apply(
+        lambda d: 'post' if pd.to_datetime(d).date() >= _POST_DATE else 'pre'
+    )
+    merged = merged.merge(surveys, on=['uid', 'survey_period'], how='left')
+    merged.drop(columns=['survey_period'], inplace=True)
     print(f"Final shape with surveys: {merged.shape}")
 
     # ── PHASE 13: Build and save complete column labels ───────────────────────

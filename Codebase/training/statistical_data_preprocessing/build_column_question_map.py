@@ -17,7 +17,7 @@ Output columns:
 import os
 import pandas as pd
 
-_ROOT      = os.path.join(os.path.dirname(__file__), '..', '..')
+_ROOT      = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 _SL_LABELS = os.path.join(_ROOT, 'datasets', 'data_loaded_cleaned', 'studentlife_self', 'studentlife_column_labels.csv')
 _NH_LABELS = os.path.join(_ROOT, 'datasets', 'data_loaded_cleaned', 'nhanes_self',      'nhanes_column_labels.csv')
 _OUT       = os.path.join(_ROOT, 'configs', 'column_question_map.csv')

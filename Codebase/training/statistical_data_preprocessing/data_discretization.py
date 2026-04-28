@@ -29,7 +29,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from kmodes.kmodes import KModes
 
-_ROOT      = os.path.join(os.path.dirname(__file__), '..', '..')
+_ROOT      = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 _CONFIG    = os.path.join(_ROOT, 'configs', 'feature_node_config.json')
 _PROC      = os.path.join(_ROOT, 'datasets', 'data_preprocessed')
 _OUT       = os.path.join(_ROOT, 'datasets', 'data_preprocessed')
@@ -226,9 +226,18 @@ def _assign_node_states(col_matrices, node_state_labels, node_name,
             mat_imp[col] = mat_imp[col].fillna('unknown')
     mat_imp = mat_imp.fillna('unknown')
 
-    # K-modes clustering
+    # K-modes clustering — fit on sample for speed, predict on full matrix.
+    # Sample size: 10% of data, clamped to [k*100, 10_000].
+    # Distinct row patterns ≤ (max_states)^n_cols ≤ 256, so k*100 rows see
+    # each pattern many times; 10k cap prevents stalling on 500k+ row nodes.
+    _fit_n = max(k * 100, min(10_000, len(mat_imp) // 10))
     km = KModes(n_clusters=k, init='Huang', n_init=5, verbose=0)
-    cluster_ids = km.fit_predict(mat_imp.values)
+    if len(mat_imp) > _fit_n:
+        fit_sample = mat_imp.sample(n=_fit_n, random_state=42)
+        km.fit(fit_sample.values)
+        cluster_ids = km.predict(mat_imp.values)
+    else:
+        cluster_ids = km.fit_predict(mat_imp.values)
 
     # Compute mean ordinal rank per cluster to order them
     ordinal_mat = np.full(mat_valid.shape, np.nan)

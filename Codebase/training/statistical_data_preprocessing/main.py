@@ -11,7 +11,6 @@ Ordered steps — do not reorder:
       updates feature_node_config.json with kmeans bin_edges
   5b. Build column-question map -> configs/column_question_map.csv
   5c. Learn P(col_val | node_state) likelihood tables -> feature_node_config.json
-  --- Steps below not yet implemented ---
   6.  Compute NHANES CPT priors -> write to feature_node_config.json
   7.  Build training_final.csv (concat StudentLife + LifeSnaps)
 """
@@ -22,15 +21,16 @@ import pandas as pd
 from data_cleaning_pruning_nhanes      import load_nhanes, clean_nhanes, prune_nhanes
 from data_cleaning_pruning_studentlife import load_studentlife, clean_studentlife, prune_studentlife
 from data_cleaning_pruning_lifesnaps   import load_lifesnaps, clean_lifesnaps, prune_lifesnaps
-from data_harmonization             import harmonize_nhanes, harmonize_studentlife, harmonize_lifesnaps
-from data_normalization             import normalize_per_user
-from data_discretization            import run_discretization
-from build_column_question_map      import build_map
-from data_likelihood_tables         import build_likelihoods
-from data_nhanes_priors             import build_priors
+from data_harmonization                import harmonize_nhanes, harmonize_studentlife, harmonize_lifesnaps
+from data_normalization                import normalize_per_user
+from data_discretization               import run_discretization
+from build_column_question_map         import build_map
+from data_likelihood_tables            import build_likelihoods
+from data_nhanes_priors                import build_priors
+from data_training_set                 import build_training_set
 
 OUT_DIR = os.path.join(
-    os.path.dirname(__file__), '..', '..', 'datasets', 'data_preprocessed'
+    os.path.dirname(__file__), '..', '..', '..', 'datasets', 'data_preprocessed'
 )
 
 
@@ -85,7 +85,9 @@ def run_all() -> tuple:
     build_likelihoods()
     print('\n=== Step 6: NHANES Priors ===')
     build_priors()
-    print('\nPipeline steps 1-6 complete. Next: training set (Step 7).')
+    print('\n=== Step 7: Training Set ===')
+    build_training_set()
+    print('\nPipeline steps 1-7 complete.')
     return nhanes_df, sl_df, ls_df
 
 

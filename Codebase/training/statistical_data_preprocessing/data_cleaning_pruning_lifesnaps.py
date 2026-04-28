@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from utils import nan_audit, vif_from_corr_matrix
 
-BASE = r'C:\Users\udbha\Documents\VS Code\MedApp\datasets'
+BASE = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'datasets')
 LIFESNAPS_PATH = os.path.join(BASE, 'data_loaded_cleaned', 'lifesnaps_self', 'lifesnaps_final.csv')
 
 

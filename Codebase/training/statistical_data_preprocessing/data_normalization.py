@@ -36,10 +36,13 @@ _NORMALIZE_COLS = [
     # ── running tasks (StudentLife) ──────────────────────────────────────────
     'avg_running_tasks_window', 'prev_day_avg_running_tasks', 'prev_day_peak_running_tasks',
     # ── sleep supplementaries (StudentLife) ──────────────────────────────────
-    'sleep_latency_mins', 'sleep_quality_rating',
-    'prev_day_sleep_ema_hours', 'prev_day_sleep_ema_rating', 'prev_day_sleep_ema_alertness',
+    # sleep_latency_mins excluded — clinical threshold (<20 / 20-45 / ≥45 min)
+    # prev_day_sleep_ema_hours excluded — clinical threshold (<6 / 6-9 / ≥9 hrs)
+    # sleep_quality_rating excluded — PSQI survey (once per semester period);
+    #   every daily row in a period has the identical value → within-user std=0
+    'prev_day_sleep_ema_rating', 'prev_day_sleep_ema_alertness',
     # ── heart rate + steps (LifeSnaps) ───────────────────────────────────────
-    'hourly_bpm', 'prev_day_bpm',
+    # hourly_bpm / prev_day_bpm excluded — clinical thresholds on raw BPM values
     'hourly_steps', 'prev_day_steps',
     # ── physio sleep (LifeSnaps) ─────────────────────────────────────────────
     'prev_night_resting_hr', 'prev_night_temperature',
@@ -67,10 +70,12 @@ def normalize_per_user(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     present = [c for c in _NORMALIZE_COLS if c in df.columns]
     for col in present:
-        grp  = df.groupby('user_id')[col]
-        mean = grp.transform('mean')
-        std  = grp.transform('std', ddof=1)
-        z    = (df[col] - mean) / std
-        df[col] = z.where(~((std == 0) & df[col].notna()), other=0.0)
+        grp      = df.groupby('user_id')[col]
+        mean     = grp.transform('mean')
+        std      = grp.transform('std', ddof=1)
+        safe_std = std.where(std != 0, np.nan)   # std=0 → NaN so division is safe on any dtype
+        z        = (df[col] - mean) / safe_std   # std=0 rows produce NaN (not inf, not exception)
+        constant = (std == 0) & df[col].notna()
+        df[col]  = z.where(~constant, other=0.0)
     print(f'Normalized {len(present)} cols per-user ({len(df["user_id"].unique())} users).')
     return df

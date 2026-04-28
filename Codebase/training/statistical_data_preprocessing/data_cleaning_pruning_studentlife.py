@@ -1,16 +1,7 @@
-import os
 import pandas as pd
 import numpy as np
 from utils import nan_audit, vif_from_corr_matrix
-
-BASE = r'C:\Users\udbha\Documents\VS Code\MedApp\datasets'
-STUDENTLIFE_PATH = os.path.join(BASE, 'data_loaded_cleaned', 'studentlife_self', 'studentlife_daily_and_surveys.csv')
-
-
-def load_studentlife() -> pd.DataFrame:
-    if not os.path.exists(STUDENTLIFE_PATH):
-        raise FileNotFoundError(f'StudentLife file not found: {STUDENTLIFE_PATH}')
-    return pd.read_csv(STUDENTLIFE_PATH)
+from data_loading import load_studentlife
 
 
 
