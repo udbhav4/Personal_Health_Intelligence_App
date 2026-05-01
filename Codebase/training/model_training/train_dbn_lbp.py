@@ -1,5 +1,5 @@
 """
-Train DBN — v3: Chow-Liu warmup + Epsilon-Greedy Structural EM + Loopy BP E-step.
+Train DBN — v3: Chow-Liu warmup + Phased-Perturbation-HC Structural EM + Loopy BP (sum-product) E-step.
 
 Changes vs train_dbn_v2.py
 --------------------------
@@ -20,7 +20,7 @@ import pandas as pd
 warnings.filterwarnings('ignore')
 
 from pgmpy.causal_discovery import ExpertKnowledge
-from pgmpy.estimators import BIC, TreeSearch
+from pgmpy.estimators import BIC, BayesianEstimator, StructureScore, TreeSearch
 from pgmpy.models import DiscreteBayesianNetwork, DynamicBayesianNetwork
 
 with warnings.catch_warnings():
@@ -31,13 +31,35 @@ with warnings.catch_warnings():
 _ROOT      = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 _CONFIG    = os.path.join(_ROOT, 'configs', 'feature_node_config.json')
 _TRAIN_CSV = os.path.join(_ROOT, 'datasets', 'final_dataset', 'training_final.csv')
-_OUT_JSON  = os.path.join(_ROOT, 'configs', 'bn_structure_lbp.json')
-_OUT_PKL   = os.path.join(_ROOT, 'models', 'dbn_model_lbp.pkl')
+_OUT_JSON  = os.path.join(_ROOT, 'configs', 'dbn_structure.json')
+_OUT_PKL   = os.path.join(_ROOT, 'models', 'dbn_model.pkl')
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 _STRUCTURAL      = {'user_id', 'date', 'hour', 'dataset'}
 _NULL_THRESHOLD  = 0.99
-_MAX_INDEGREE    = 4
+_MAX_INDEGREE            = 3
+_MAX_INDEGREE_RESTRICTED = 2   # for most restricted nodes
+_MAX_INDEGREE_TIGHT      = 1   # for root traits + monthly static nodes (extrav, neuroticism, sleep_disturbances)
+
+# -------------------------------------------------------------------------
+# This is a set of nodes that have been proven to overfit over the data due to extreme
+# sparsity and high cardinality. Hence, these need to be treated differently by capping
+# their in-degree more aggressively and using a stronger BDeu prior during parameter fitting.
+# This is a pragmatic solution to prevent the EM search from overfitting to noise in these nodes.
+_RESTRICTED_NODES = {
+    'positive_affect', 'stress_self_efficacy', 'physical_health',
+    'negative_affect', 'mental_health',
+}
+# root trait + monthly-only nodes: near-zero temporal signal, CPT explodes with 2+ parents
+_TIGHT_NODES = {'extraversion', 'neuroticism', 'sleep_disturbances'}
+# stress_self_efficacy: stuck at uniform (train -1.39) with ESS=20 — reduce to 10.
+_MEDIUM_ESS_NODES = {'stress_self_efficacy'}
+_HIGH_ESS_NODES   = (_RESTRICTED_NODES | _TIGHT_NODES) - _MEDIUM_ESS_NODES
+
+_BDEU_ESS        = 5    # default
+_MEDIUM_BDEU_ESS = 10   # stress_self_efficacy
+_HIGH_BDEU_ESS   = 20   # remaining restricted nodes
+# -------------------------------------------------------------------------
 _EM_MAX_ITER     = 20
 _CONVERGENCE_PAT = 3
 
@@ -159,7 +181,7 @@ def _chow_liu_warmup(
     hc     = HillClimbSearch(df_imp)
     result = hc.estimate(
         start_dag=seed,
-        scoring_method=BIC(df_imp),
+        scoring_method=_PerNodeBIC(df_imp),
         tabu_length=max(len(forced_edges), 10),
         max_indegree=_MAX_INDEGREE,
         expert_knowledge=expert_knowledge,
@@ -252,15 +274,19 @@ def _perturb_structure(model, trainable_sorted, forced_edges, expert_knowledge, 
 #  E-step — True Loopy BP (max-product)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _loopy_bp_map(cpds_dict, states_dict, parents_dict, children_dict,
-                   evidence, latent_names, max_iter, tol):
+def _loopy_bp_beliefs_estep(cpds_dict, states_dict, parents_dict, children_dict,
+                             evidence, max_iter, tol):
     """
-    Max-product loopy BP on original DAG.
+    Sum-product loopy BP on original DAG — returns full marginal beliefs.
 
     Parent message  : contract CPT over parent beliefs (right-to-left matmul).
     Child λ-message : contract child CPT over child belief + other-parent beliefs,
                       then multiply; axis tracking processes dims in descending order
                       so higher axes are removed before lower ones — avoids index shifts.
+
+    Returning beliefs (not argmax) keeps the soft-assignment interface; callers
+    take argmax for hard-EM assignment now, and can switch to expected counts
+    (soft-EM) later without changing this function.
     """
     nodes = list(cpds_dict.keys())
 
@@ -329,7 +355,7 @@ def _loopy_bp_map(cpds_dict, states_dict, parents_dict, children_dict,
         if max_delta < tol:
             break
 
-    return {n: states_dict[n][int(np.argmax(beliefs[n]))] for n in latent_names}
+    return beliefs
 
 
 def _lbp_worker(args: tuple) -> list:
@@ -349,11 +375,14 @@ def _lbp_worker(args: tuple) -> list:
     results = []
     for ev in evidence_list:
         try:
-            q = _loopy_bp_map(
+            beliefs = _loopy_bp_beliefs_estep(
                 cpds_dict, states_dict, parents_dict, children_dict,
-                ev, latent_names, _LBP_MAX_ITER, _LBP_TOL,
+                ev, _LBP_MAX_ITER, _LBP_TOL,
             )
-            results.append(q)
+            # Hard assignment (argmax) for current hard-EM; swap for expected
+            # counts here when upgrading to soft-EM in a future step.
+            results.append({n: states_dict[n][int(np.argmax(beliefs[n]))]
+                            for n in latent_names})
         except Exception:
             results.append(dict(fallback))
     return results
@@ -400,6 +429,20 @@ def _estep(fitted_model, df_aug, latent_names, obs_names, n_workers, fallback, p
 #  M-step
 # ══════════════════════════════════════════════════════════════════════════════
 
+class _PerNodeBIC(StructureScore):
+    """BIC wrapper that hard-caps in-degree per node tier during HC search."""
+    def __init__(self, data, **kwargs):
+        super().__init__(data, **kwargs)
+        self._bic = BIC(data, **kwargs)
+
+    def local_score(self, variable, parents):
+        if variable in _TIGHT_NODES and len(parents) > _MAX_INDEGREE_TIGHT:
+            return -float('inf')
+        if variable in _RESTRICTED_NODES and len(parents) > _MAX_INDEGREE_RESTRICTED:
+            return -float('inf')
+        return self._bic.local_score(variable, parents)
+
+
 def _mstep_structure(df_aug, current_structure, forced_edges, expert_knowledge,
                       trainable_sorted, hc_steps, perturb, rng):
     seed = (
@@ -410,17 +453,10 @@ def _mstep_structure(df_aug, current_structure, forced_edges, expert_knowledge,
     seed          = _sanitize_structure(seed, forced_edges)
     clean_current = _sanitize_structure(current_structure, forced_edges)
 
-    # Fix #6: show parents of every node that has a forced edge going INTO it
-    forced_children = {c for _, c in forced_edges}
-    for fc in sorted(forced_children):
-        if fc in clean_current.nodes():
-            parents = list(clean_current.get_parents(fc))
-            print(f'  [debug] parents of {fc} before HC: {parents}')
-
     df_imp = _mode_impute(df_aug[trainable_sorted])
     hc     = HillClimbSearch(df_imp)
     hc_kwargs = dict(
-        scoring_method=BIC(df_imp),
+        scoring_method=_PerNodeBIC(df_imp),
         tabu_length=max(len(forced_edges), 10),
         max_indegree=_MAX_INDEGREE,
         expert_knowledge=expert_knowledge,
@@ -439,13 +475,37 @@ def _mstep_structure(df_aug, current_structure, forced_edges, expert_knowledge,
 
 
 def _mstep_params(structure, df_aug, state_names):
-    df_imp = _mode_impute(df_aug[sorted(structure.nodes())])
-    return structure.fit(df_imp, state_names=state_names)
+    # No mode imputation: NaN rows are dropped per-CPD by BayesianEstimator,
+    # avoiding the bias of counting missing values toward the modal state.
+    df_fit    = df_aug[sorted(structure.nodes())]
+    estimator = BayesianEstimator(structure, df_fit, state_names=state_names)
+    cpds = [
+        estimator.estimate_cpd(n, prior_type='BDeu',
+                               equivalent_sample_size=(
+                                   _HIGH_BDEU_ESS   if n in _HIGH_ESS_NODES   else
+                                   _MEDIUM_BDEU_ESS if n in _MEDIUM_ESS_NODES else
+                                   _BDEU_ESS))
+        for n in structure.nodes()
+    ]
+    structure.add_cpds(*cpds)
+    return structure
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  DBN construction & fitting
 # ══════════════════════════════════════════════════════════════════════════════
+
+def _fit_dbn_bdeu(dbn, pairs_df, state_names, ess):
+    # BayesianEstimator can't handle DynamicNode objects directly.
+    # Build a mirror BayesianNetwork with plain-tuple node names that match
+    # pairs_df columns, fit BDeu there, then hand the CPDs to the DBN.
+    edges  = [(tuple(p), tuple(c)) for p, c in dbn.edges()]
+    mirror = DiscreteBayesianNetwork(edges)
+    dbn_states = {(n, t): state_names[n] for n, t in mirror.nodes()}
+    be   = BayesianEstimator(mirror, pairs_df, state_names=dbn_states)
+    cpds = be.get_parameters(prior_type='BDeu', equivalent_sample_size=ess)
+    dbn.add_cpds(*cpds)
+
 
 def _build_dbn(intra_model, temporal_nodes):
     dbn = DynamicBayesianNetwork()
@@ -478,17 +538,13 @@ def _build_dbn_fit_df(df_aug, all_nodes, state_names):
             pair.update({(n, 1): row.get(n) for n in all_nodes})
             pair_rows.append(pair)
 
-    pairs_df = pd.DataFrame(pair_rows)
-    for col in pairs_df.columns:
-        if pairs_df[col].isna().any():
-            node = col[0]
-            if node in state_names:
-                pairs_df[col] = pairs_df[col].fillna(state_names[node][0])
-            else:
-                mode = pairs_df[col].mode()
-                if len(mode):
-                    pairs_df[col] = pairs_df[col].fillna(mode.iloc[0])
-    return pairs_df
+    # NaN values are left as-is; BayesianEstimator drops them per-CPD rather
+    # than imputing, so missing observations don't inflate any state's count.
+    df = pd.DataFrame(pair_rows)
+    # pd.DataFrame promotes tuple keys to MultiIndex; flatten to flat tuple Index
+    # so BayesianEstimator can access columns as ('node', 0) / ('node', 1).
+    df.columns = pd.Index(df.columns.tolist())
+    return df
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -508,9 +564,6 @@ def _save(dbn, intra_model, forced_edges, trainable, excluded, temporal_nodes, l
         'learned_edges':     [[p, c] for p, c in learned],
         'all_edges':         [[p, c] for p, c in all_intra],
         'inter_slice_edges': [[n, n] for n in sorted(temporal_nodes)],
-        'warmup':            'chow-liu',
-        'em_search':         'epsilon-greedy',
-        'estep':             'loopy-bp-max-product',
     }
     os.makedirs(os.path.dirname(_OUT_PKL), exist_ok=True)
     with open(_OUT_JSON, 'w') as f:
@@ -655,8 +708,8 @@ def train_dbn() -> DynamicBayesianNetwork:
     df_aug_full = pd.concat([df_struct.reset_index(drop=True), df_aug.reset_index(drop=True)], axis=1)
     pairs_df    = _build_dbn_fit_df(df_aug_full, trainable_sorted, state_names)
     print(f'  Pairs: {len(pairs_df):,}')
-    dbn.fit(pairs_df)
-    print(f'  CPDs: {len(dbn.cpds)}')
+    _fit_dbn_bdeu(dbn, pairs_df, state_names, _BDEU_ESS)
+    print(f'  CPDs: {len(dbn.cpds)} (BDeu ESS={_BDEU_ESS})')
 
     print('\n=== Step 11: Save ===')
     _save(dbn, fitted_final, forced_edges, trainable, excluded, temporal_nodes, latent_names)

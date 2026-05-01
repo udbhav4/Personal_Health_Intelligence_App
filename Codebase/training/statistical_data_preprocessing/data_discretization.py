@@ -22,12 +22,14 @@ Updates:
   configs/feature_node_config.json  (kmeans source_column_bins: k, bin_edges)
 """
 
-import os, json
+import os, json, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from kmodes.kmodes import KModes
+from utils import get_uid_split
 
 _ROOT      = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 _CONFIG    = os.path.join(_ROOT, 'configs', 'feature_node_config.json')
@@ -125,14 +127,14 @@ def _discretize_column(series, col_cfg, pooled_vals=None):
         raise ValueError(f'Unknown column discretization method: {method!r}')
 
 
-def _fit_kmeans_bins(col, node_name, datasets, scb_entry):
+def _fit_kmeans_bins(col, node_name, train_datasets, scb_entry):
     """
-    Fit kmeans on pooled non-null values of col across all datasets.
+    Fit kmeans on pooled non-null train-split values of col across datasets.
     Writes k, bin_edges, state_labels back into scb_entry in-place.
     Returns updated scb_entry.
     """
     parts = []
-    for df in datasets.values():
+    for df in train_datasets.values():
         if col in df.columns:
             vals = df[col].dropna().to_numpy().astype(float)
             if len(vals):
@@ -263,6 +265,37 @@ def _assign_node_states(col_matrices, node_state_labels, node_name,
     return result
 
 
+# ── Config reset ──────────────────────────────────────────────────────────────
+
+def clear_kmeans_config():
+    """
+    Remove kmeans-computed values from feature_node_config so they are
+    refitted from the current train split on the next run_discretization() call.
+
+    Clears only per-column entries where method == 'kmeans':
+      bin_edges, k, state_labels  (all written by _fit_kmeans_bins)
+
+    Does NOT touch node-level state_labels, forced_parents, temporal/latent
+    flags, clinical thresholds, passthrough value_maps, prior, or
+    column_likelihoods — those are either manually defined or overwritten
+    unconditionally by their own pipeline steps.
+
+    Called by main.py before run_discretization() so standalone runs of
+    data_discretization.py are unaffected and reuse cached bins.
+    """
+    cfg     = _load_config()
+    cleared = 0
+    for node_cfg in cfg['nodes'].values():
+        for col_cfg in node_cfg.get('source_column_bins', {}).values():
+            if col_cfg.get('method') == 'kmeans':
+                col_cfg.pop('bin_edges',    None)
+                col_cfg.pop('k',            None)
+                col_cfg.pop('state_labels', None)
+                cleared += 1
+    _save_config(cfg)
+    print(f'  Cleared kmeans cache for {cleared} column(s).')
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def run_discretization():
@@ -277,6 +310,21 @@ def run_discretization():
     ls = pd.read_csv(os.path.join(_PROC, 'lifesnaps_preprocessed.csv'))
     nh = pd.read_csv(os.path.join(_PROC, 'nhanes_preprocessed.csv'))
     datasets = {'studentlife': sl, 'lifesnaps': ls, 'nhanes': nh}
+
+    # K-Means fitted on train rows only — prevents val uid distributions from
+    # leaking into bin boundaries used to evaluate those same val rows.
+    sl_train_uids, _ = get_uid_split(sl, uid_col='user_id')
+    ls_train_uids, _ = get_uid_split(ls, uid_col='user_id')
+    train_datasets = {
+        'studentlife': sl[sl['user_id'].isin(sl_train_uids)] if sl_train_uids else sl,
+        'lifesnaps':   ls[ls['user_id'].isin(ls_train_uids)] if ls_train_uids else ls,
+        'nhanes':      nh,
+    }
+    print(f'K-Means fit: SL {len(train_datasets["studentlife"])} rows '
+          f'({len(sl_train_uids)} uids), '
+          f'LS {len(train_datasets["lifesnaps"])} rows '
+          f'({len(ls_train_uids)} uids), '
+          f'NHANES {len(nh)} rows')
 
     # Output frames: structural columns only to start
     out     = {}
@@ -301,7 +349,7 @@ def run_discretization():
         # ── Phase 1: fit kmeans bins for any column that needs it ──────────
         for col, col_cfg in scb.items():
             if col_cfg['method'] == 'kmeans' and 'bin_edges' not in col_cfg:
-                _fit_kmeans_bins(col, node_name, datasets, col_cfg)
+                _fit_kmeans_bins(col, node_name, train_datasets, col_cfg)
                 config_modified = True
 
         # ── Phase 1: discretize each source column per dataset ─────────────

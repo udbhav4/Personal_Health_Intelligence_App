@@ -2,6 +2,20 @@ import numpy as np
 import pandas as pd
 
 
+def get_uid_split(df: pd.DataFrame, uid_col: str = 'user_id',
+                  seed: int = 42, val_frac: float = 0.2):
+    """Uid-level 80/20 split. Returns (train_uids, val_uids) as sorted lists."""
+    if uid_col not in df.columns:
+        return [], []
+    uids = np.array(sorted(df[uid_col].dropna().unique()))
+    rng  = np.random.default_rng(seed)
+    rng.shuffle(uids)
+    n_val      = max(1, int(len(uids) * val_frac))
+    val_uids   = uids[:n_val].tolist()
+    train_uids = uids[n_val:].tolist()
+    return train_uids, val_uids
+
+
 def nan_audit(df: pd.DataFrame, label: str) -> pd.DataFrame:
     n = len(df)
     audit = df.isnull().sum().rename('null_count').to_frame()

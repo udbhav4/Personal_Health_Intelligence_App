@@ -749,7 +749,6 @@ def load_studentlife():
                 if lo < len(sorted_ts) and sorted_ts[lo] < w_end_unix:
                     validator_alive_windows.add((uid, w_start_unix))
     print(f"  Validator alive windows: {len(validator_alive_windows)}")
-    del validator_timestamps
 
     # ── PHASE 1: Load raw behavioural sensor data ─────────────────────────────
     # All behavioural sensors loaded into memory first so their timestamps can

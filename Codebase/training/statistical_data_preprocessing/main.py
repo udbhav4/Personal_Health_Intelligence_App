@@ -23,7 +23,7 @@ from data_cleaning_pruning_studentlife import load_studentlife, clean_studentlif
 from data_cleaning_pruning_lifesnaps   import load_lifesnaps, clean_lifesnaps, prune_lifesnaps
 from data_harmonization                import harmonize_nhanes, harmonize_studentlife, harmonize_lifesnaps
 from data_normalization                import normalize_per_user
-from data_discretization               import run_discretization
+from data_discretization               import run_discretization, clear_kmeans_config
 from build_column_question_map         import build_map
 from data_likelihood_tables            import build_likelihoods
 from data_nhanes_priors                import build_priors
@@ -78,6 +78,7 @@ def run_all() -> tuple:
     sl_df     = run_studentlife()
     ls_df     = run_lifesnaps()
     print('\n=== Step 5: Discretization ===')
+    clear_kmeans_config()
     run_discretization()
     print('\n=== Step 5b: Column-Question Map ===')
     build_map()
