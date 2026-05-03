@@ -8,6 +8,7 @@ E-step  : True loopy BP (max-product) on original DAG — no triangulation,
           O(iters × nodes × states^(max_indegree+1)) per pattern vs VE's exponential.
 """
 
+import itertools
 import json
 import os
 import pickle
@@ -21,6 +22,7 @@ warnings.filterwarnings('ignore')
 
 from pgmpy.causal_discovery import ExpertKnowledge
 from pgmpy.estimators import BIC, BayesianEstimator, StructureScore, TreeSearch
+from pgmpy.factors.discrete import TabularCPD
 from pgmpy.models import DiscreteBayesianNetwork, DynamicBayesianNetwork
 
 with warnings.catch_warnings():
@@ -60,6 +62,56 @@ _BDEU_ESS        = 5    # default
 _MEDIUM_BDEU_ESS = 10   # stress_self_efficacy
 _HIGH_BDEU_ESS   = 20   # remaining restricted nodes
 # -------------------------------------------------------------------------
+
+# ── Manual CPD nodes (latent — EM blind, clinically specified instead) ────────
+# Sources: Cohen PSS (mood→stress); Spiegel 2004, Irwin 2016 (sleep→stress);
+#          McEwen 1998 allostatic load (physical→mental); AHA/ACSM/WHO for physical_stress.
+_MANUAL_CPD_NODES = frozenset({'mental_stress', 'physical_stress'})
+
+# Max parents allowed by HC for each manual node (= number of forced parents).
+# Prevents HC from adding extra parents that the manual CPD doesn't cover.
+_MANUAL_FORCED_INDEGREE = {
+    'mental_stress':  3,   # mood, sleep_quality, physical_stress
+    'physical_stress': 5,  # heart_rate, exercise, pain_level, sleep_quality, activity
+}
+
+# Load score per parent state.  Missing parent → score 0 (safe if sensor node excluded).
+_MANUAL_SCORE_DATA = {
+    'mental_stress': {
+        'mood':            {'low': 2, 'high': 0},
+        'sleep_quality':   {'poor': 2, 'fair': 1, 'good': 0},
+        'physical_stress': {'low': 0, 'moderate': 1, 'high': 2},
+    },
+    'physical_stress': {
+        'heart_rate':    {'low': 0, 'normal': 0, 'elevated': 1, 'high': 2},
+        'exercise':      {'none': 0, 'light': 1, 'moderate': 2, 'vigorous': 3},
+        'pain_level':    {'none': 0, 'some': 2, 'significant': 4},
+        'sleep_quality': {'poor': 2, 'fair': 1, 'good': 0},
+        'activity':      {'low': 0, 'high': 1},
+    },
+}
+
+# (load_lo, load_hi) → [P(low), P(moderate), P(high)]
+_MANUAL_BUCKET_DATA = {
+    'mental_stress': [
+        ((0, 1), [0.85, 0.12, 0.03]),
+        ((2, 2), [0.40, 0.38, 0.22]),
+        ((3, 3), [0.20, 0.42, 0.38]),
+        ((4, 4), [0.08, 0.27, 0.65]),
+        ((5, 5), [0.04, 0.16, 0.80]),
+        ((6, 6), [0.02, 0.08, 0.90]),
+    ],
+    'physical_stress': [
+        ((0,  1),  [0.85, 0.12, 0.03]),
+        ((2,  3),  [0.60, 0.30, 0.10]),
+        ((4,  5),  [0.30, 0.45, 0.25]),
+        ((6,  7),  [0.12, 0.38, 0.50]),
+        ((8,  9),  [0.05, 0.20, 0.75]),
+        ((10, 12), [0.02, 0.10, 0.88]),
+    ],
+}
+# ─────────────────────────────────────────────────────────────────────────────
+
 _EM_MAX_ITER     = 20
 _CONVERGENCE_PAT = 3
 
@@ -81,6 +133,65 @@ _LBP_MAX_ITER = 15    # message-passing iterations per evidence pattern
 _LBP_TOL      = 1e-3  # early-stop if max belief delta < this
 
 _N_WORKERS = max(1, (os.cpu_count() or 2) - 1)
+
+
+def _score_to_probs(load: int, buckets: list) -> list:
+    for (lo, hi), probs in buckets:
+        if lo <= load <= hi:
+            return probs
+    return buckets[-1][1]
+
+
+def _inject_manual_cpds(model, state_names: dict, for_dbn: bool = False) -> None:
+    """Replace CPDs for _MANUAL_CPD_NODES with clinically-specified load-scored values.
+
+    for_dbn=True: model is DynamicBayesianNetwork; nodes are (name, slice) tuples.
+    Only the t=0 intra-slice CPD is replaced — temporal transitions stay BDeu-learned.
+    """
+    for node in _MANUAL_CPD_NODES:
+        dbn_node = (node, 0) if for_dbn else node
+        if dbn_node not in model.nodes():
+            continue
+
+        all_parents = list(model.get_parents(dbn_node))
+        if for_dbn:
+            parents     = [p for p in all_parents if p[1] == 0]
+            parent_name = lambda p: p[0]
+        else:
+            parents     = all_parents
+            parent_name = lambda p: p
+
+        states      = state_names[node]
+        node_scores = _MANUAL_SCORE_DATA[node]
+        buckets     = _MANUAL_BUCKET_DATA[node]
+
+        evidence_card = [len(state_names[parent_name(p)]) for p in parents]
+        combos        = list(itertools.product(*[state_names[parent_name(p)] for p in parents]))
+
+        rows = [[] for _ in states]
+        for combo in combos:
+            load = sum(node_scores.get(parent_name(p), {}).get(s, 0)
+                       for p, s in zip(parents, combo))
+            for i, pr in enumerate(_score_to_probs(load, buckets)):
+                rows[i].append(pr)
+
+        sn = {dbn_node: states}
+        for p in parents:
+            sn[p] = state_names[parent_name(p)]
+
+        new_cpd = TabularCPD(
+            variable=dbn_node,
+            variable_card=len(states),
+            values=rows,
+            evidence=parents,
+            evidence_card=evidence_card,
+            state_names=sn,
+        )
+        for old in [c for c in model.cpds if c.variable == dbn_node]:
+            model.remove_cpds(old)
+        model.add_cpds(new_cpd)
+        print(f'  [manual CPD] Pinned {node} ({len(combos)} parent combos, '
+              f'parents={[parent_name(p) for p in parents]})')
 
 
 def _load_config() -> dict:
@@ -440,6 +551,8 @@ class _PerNodeBIC(StructureScore):
             return -float('inf')
         if variable in _RESTRICTED_NODES and len(parents) > _MAX_INDEGREE_RESTRICTED:
             return -float('inf')
+        if variable in _MANUAL_FORCED_INDEGREE and len(parents) > _MANUAL_FORCED_INDEGREE[variable]:
+            return -float('inf')
         return self._bic.local_score(variable, parents)
 
 
@@ -661,6 +774,7 @@ def train_dbn() -> DynamicBayesianNetwork:
         df_iter      = _subsample(df_aug, frac, rng)
         print('  M-step: fit CPTs ...')
         fitted_model = _mstep_params(current_structure, df_iter, state_names)
+        _inject_manual_cpds(fitted_model, state_names)
 
         n_uniq = len(df_aug[obs_names].drop_duplicates())
         print(f'  E-step (LBP): {len(df_aug):,} rows → {n_uniq:,} unique patterns, {_N_WORKERS} worker(s) ...')
@@ -699,6 +813,7 @@ def train_dbn() -> DynamicBayesianNetwork:
 
     print('\n=== Step 8: Final CPT fit ===')
     fitted_final = _mstep_params(current_structure, df_aug, state_names)
+    _inject_manual_cpds(fitted_final, state_names)
 
     print('\n=== Step 9: Build DBN ===')
     dbn = _build_dbn(fitted_final, temporal_nodes)
@@ -709,6 +824,7 @@ def train_dbn() -> DynamicBayesianNetwork:
     pairs_df    = _build_dbn_fit_df(df_aug_full, trainable_sorted, state_names)
     print(f'  Pairs: {len(pairs_df):,}')
     _fit_dbn_bdeu(dbn, pairs_df, state_names, _BDEU_ESS)
+    _inject_manual_cpds(dbn, state_names, for_dbn=True)
     print(f'  CPDs: {len(dbn.cpds)} (BDeu ESS={_BDEU_ESS})')
 
     print('\n=== Step 11: Save ===')
