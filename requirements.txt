@@ -3,10 +3,6 @@ pgmpy
 pandas
 scikit-learn
 kmodes
-transformers
-reportlab
-fastapi
-uvicorn
 numpy
 pyreadstat
 matplotlib

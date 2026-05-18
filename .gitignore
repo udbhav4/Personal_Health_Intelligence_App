@@ -17,4 +17,14 @@ database/
 models/
 
 # Prompts
-prompts/
+prompts/.claude/
+CAVEMAN_SKILL.md
+count_words.py
+gliimr_writeup.md
+health_app_sdlc_v2.svg
+medical_app_system_design_v7_5.md
+report_plan.md
+retraining_plan.md
+simulate_7days.py
+testing_fix1.md
+testing_fix2.md
