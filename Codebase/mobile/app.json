@@ -29,6 +29,11 @@
     },
     "plugins": [
       "llama.rn"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d6ac4dbe-6eb3-41d5-b2ae-95f2c4994212"
+      }
+    }
   }
 }
