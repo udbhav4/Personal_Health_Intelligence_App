@@ -17,7 +17,7 @@ database/
 models/
 
 # Prompts
-prompts/.claude/
+.claude/
 CAVEMAN_SKILL.md
 count_words.py
 gliimr_writeup.md
