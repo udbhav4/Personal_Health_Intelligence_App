@@ -1,7 +1,7 @@
 """
 Full preprocessing pipeline.
 
-Ordered steps — do not reorder:
+Ordered steps:
   1.  Load + clean + prune each dataset
   2.  Harmonize column names
   3.  Normalize per-user (StudentLife and LifeSnaps only; NHANES skipped)
