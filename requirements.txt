@@ -1,0 +1,22 @@
+# Python (training + dev tools)
+pgmpy
+pandas
+scikit-learn
+kmodes
+transformers
+reportlab
+fastapi
+uvicorn
+numpy
+pyreadstat
+matplotlib
+networkx
+
+# Mobile (codebase/mobile/) — install with: npx expo install <package>
+# expo-sqlite
+# llama.rn        (on-device SLM inference — NER + ReAct agent)
+
+# Mobile assets — regenerate after any config change:
+#   python -m codebase.backend.export_cpds                   → configs/cpd_tables.json
+#   python -m codebase.backend.export_column_question_map    → configs/column_question_map.json
+# Then copy to codebase/mobile/src/assets/

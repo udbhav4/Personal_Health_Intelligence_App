@@ -2,6 +2,19 @@ import pandas as pd
 import numpy as np
 
 
+def _hour_to_time_of_day(hour_series: pd.Series) -> pd.Series:
+    # night: 8pm–midnight + midnight–4am (non-contiguous, needs np.select)
+    h = hour_series
+    return pd.Series(
+        np.select(
+            [(h < 4) | (h >= 20), (h >= 4) & (h < 12), (h >= 12) & (h < 17), (h >= 17) & (h < 20)],
+            ['night', 'morning', 'afternoon', 'evening'],
+            default=None,
+        ),
+        index=hour_series.index,
+    )
+
+
 # ---------------------------------------------------------------------------
 # StudentLife
 # ---------------------------------------------------------------------------
@@ -10,6 +23,8 @@ def harmonize_studentlife(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df = df.rename(columns={'uid': 'user_id'})
     df['dataset'] = 'studentlife'
+    if 'hour' in df.columns:
+        df['time_of_day'] = _hour_to_time_of_day(df['hour'])
     return df
 
 
@@ -46,6 +61,8 @@ def harmonize_lifesnaps(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=['age'], errors='ignore')
 
     df['dataset'] = 'lifesnaps'
+    if 'hour' in df.columns:
+        df['time_of_day'] = _hour_to_time_of_day(df['hour'])
     return df
 
 

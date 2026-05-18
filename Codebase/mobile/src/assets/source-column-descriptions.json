@@ -1,0 +1,18 @@
+{
+  "_note": "English descriptions for composite and direct source columns that feed DBN nodes. Used in the SLM NER prompt (Level 2 routing) so the model can match user text to a source column when no specific item column match exists. Keys are source_column names as they appear in feature_node_config.json source_column_bins and column_question_map.csv composite_column field.",
+
+  "phq_total": "PHQ-9 total score — overall severity of depressive symptoms over the past two weeks (0-27). Covers low mood, loss of interest, sleep problems, fatigue, appetite changes, self-worth, concentration, psychomotor changes, and thoughts of death.",
+  "pss_helplessness": "Perceived Stress Scale helplessness subscale — how often the person felt unable to control important things in their life or felt difficulties were piling up uncontrollably (past month).",
+  "pss_self_efficacy": "Perceived Stress Scale self-efficacy subscale — how often the person felt confident handling personal problems and felt things were going their way (past month).",
+  "panas_pa": "Positive Affect total — composite of enthusiasm, inspiration, and other positive emotional states. Higher = more positive emotional tone.",
+  "panas_na": "Negative Affect total — composite of hostility, guilt, fear, and distress. Higher = more negative emotional tone.",
+  "lonely_total": "UCLA Loneliness Scale total — overall sense of social isolation, lack of companionship, and feeling left out or excluded.",
+  "vr_physical_health": "SF-36 Physical Health composite — overall physical functioning including activity limitations, pain interference, and self-rated general health.",
+  "vr_mental_health": "SF-36 Mental Health composite — overall mental and emotional functioning including energy levels, emotional role limitations, and social activity interference.",
+  "sleep_disturbances": "Sleep disturbance composite — frequency of disrupted sleep events including waking in the night, difficulty falling asleep, bad dreams, pain during sleep, coughing or snoring, and low daytime enthusiasm.",
+  "diabetes_status": "Diabetes status composite — whether a doctor has ever diagnosed diabetes, prediabetes, or current insulin use.",
+  "chronic_condition": "Chronic condition composite — whether a doctor has ever diagnosed any of: arthritis, gout, coronary heart disease, heart attack, thyroid problem, COPD, abdominal pain disorder, or obesity.",
+  "pain_level": "Chest pain and exertional discomfort composite — presence of chest pain or shortness of breath on stairs or inclines, indicating cardiovascular or respiratory strain.",
+  "extraversion": "Big Five extraversion trait score — how talkative, outgoing, sociable, and energetic the person is versus reserved and quiet.",
+  "neuroticism": "Big Five neuroticism trait score — tendency toward negative emotions including depression, anxiety, moodiness, tension, and nervousness."
+}

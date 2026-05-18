@@ -1,0 +1,20 @@
+# Datasets
+datasets/
+
+# Virtual environment
+venv/
+
+# Pycache
+__pycache__/
+
+# Configs
+configs/
+
+# Databse
+database/
+
+# Model
+models/
+
+# Prompts
+prompts/

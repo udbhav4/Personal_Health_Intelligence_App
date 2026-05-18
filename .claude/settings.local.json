@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import pgmpy; print\\('pgmpy version:', pgmpy.__version__\\)\")",
+      "Bash(python -c ' *)"
+    ]
+  }
+}

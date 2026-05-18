@@ -1,0 +1,2157 @@
+{
+  "mood_happy": {
+    "c": "mood_happy",
+    "n": "mood",
+    "q": "If you answered \"Yes\" on the first question, how happy do you feel?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "a little bit"
+      },
+      {
+        "v": 2,
+        "l": "somewhat"
+      },
+      {
+        "v": 3,
+        "l": "very much"
+      },
+      {
+        "v": 4,
+        "l": "extremely"
+      }
+    ]
+  },
+  "mood_sad": {
+    "c": "mood_sad",
+    "n": "mood",
+    "q": "If you answered \"Yes\" on the third question, how sad do you feel?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "a little bit"
+      },
+      {
+        "v": 2,
+        "l": "somewhat"
+      },
+      {
+        "v": 3,
+        "l": "very much"
+      },
+      {
+        "v": 4,
+        "l": "extremely"
+      }
+    ]
+  },
+  "mood_how": {
+    "c": "mood_how",
+    "n": "mood",
+    "q": "How are you right now?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "happy"
+      },
+      {
+        "v": 2,
+        "l": "stressed"
+      },
+      {
+        "v": 3,
+        "l": "tired"
+      }
+    ]
+  },
+  "exercise_type": {
+    "c": "exercise_type",
+    "n": "exercise",
+    "q": "If you exercised how long did you exercise for?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "None"
+      },
+      {
+        "v": 2,
+        "l": "<30 mins"
+      },
+      {
+        "v": 3,
+        "l": "30-60 mins"
+      },
+      {
+        "v": 4,
+        "l": "60-90 mins"
+      },
+      {
+        "v": 5,
+        "l": ">90mins"
+      }
+    ]
+  },
+  "exercise_walk": {
+    "c": "exercise_walk",
+    "n": "exercise",
+    "q": "How long did you walk for today?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "None"
+      },
+      {
+        "v": 2,
+        "l": "<30 mins"
+      },
+      {
+        "v": 3,
+        "l": "30-60 mins"
+      },
+      {
+        "v": 4,
+        "l": "60-90 mins"
+      },
+      {
+        "v": 5,
+        "l": ">90mins"
+      }
+    ]
+  },
+  "prev_day_events_positive": {
+    "c": "prev_day_events_positive",
+    "n": "social_events_positive",
+    "q": "Think About Yesterday's Events. Rate the intensity of your Most Positive Events on a scale ranging from 1 (very weak)  to 7 (very intense).",
+    "range": {
+      "min": 1,
+      "max": 7,
+      "unit": "intensity"
+    }
+  },
+  "prev_day_events_negative": {
+    "c": "prev_day_events_negative",
+    "n": "social_events_negative",
+    "q": "Rate the intensity of your Most Negative Events on a scale.",
+    "range": {
+      "min": 1,
+      "max": 7,
+      "unit": "intensity"
+    }
+  },
+  "productivity": {
+    "c": "productivity",
+    "n": "productivity",
+    "q": "Rate your productivity:",
+    "opts": [
+      {
+        "v": 1,
+        "l": "super distracted"
+      },
+      {
+        "v": 2,
+        "l": "mildly distracted"
+      },
+      {
+        "v": 3,
+        "l": "mildly productive"
+      },
+      {
+        "v": 4,
+        "l": "super productive"
+      }
+    ]
+  },
+  "prev_day_sleep_ema_hours": {
+    "c": "prev_day_sleep_ema_hours",
+    "n": "sleep_quality",
+    "q": "How many hours did you sleep last night?",
+    "range": {
+      "min": 0,
+      "max": 12,
+      "unit": "hours"
+    }
+  },
+  "prev_day_sleep_ema_rating": {
+    "c": "prev_day_sleep_ema_rating",
+    "n": "sleep_quality",
+    "q": "How would rate your overall sleep last night?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Very good"
+      },
+      {
+        "v": 2,
+        "l": "Fairly good"
+      },
+      {
+        "v": 3,
+        "l": "Fairly bad"
+      },
+      {
+        "v": 4,
+        "l": "Very bad"
+      }
+    ]
+  },
+  "prev_day_sleep_ema_alertness": {
+    "c": "prev_day_sleep_ema_alertness",
+    "n": "sleep_quality",
+    "q": "How often did you have trouble staying awake yesterday while in class, eating meals or engaging in social activity?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "None"
+      },
+      {
+        "v": 2,
+        "l": "Once"
+      },
+      {
+        "v": 3,
+        "l": "Twice"
+      },
+      {
+        "v": 4,
+        "l": "Three or more times"
+      }
+    ]
+  },
+  "stress_ema_level": {
+    "c": "stress_ema_level",
+    "n": "stress_ema",
+    "q": "Right now, I am...",
+    "opts": [
+      {
+        "v": 1,
+        "l": "A little stressed"
+      },
+      {
+        "v": 2,
+        "l": "Definitely stressed"
+      },
+      {
+        "v": 3,
+        "l": "Stressed out"
+      },
+      {
+        "v": 4,
+        "l": "Feeling good"
+      },
+      {
+        "v": 5,
+        "l": "Feeling great"
+      }
+    ]
+  },
+  "phq_interest": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Little interest or pleasure in doing things",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_depressed": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Feeling down, depressed, hopeless.",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_sleep": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Trouble falling or staying asleep, or sleeping too much.",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_tired": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Feeling tired or having little energy",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_appetite": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Poor appetite or overeating",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_failure": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Feeling bad about yourself or that you are a failure or have let yourself or your family down",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_concentrate": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Trouble concentrating on things, such as reading the newspaper or watching television",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_psychomotor": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Moving or speaking so slowly that other people could have noticed. Or the opposite being so figety or restless that you have been moving around a lot more than usual",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "phq_death": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Thoughts that you would be better off dead, or of hurting yourself",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "pss_2": {
+    "c": "pss_helplessness",
+    "n": "stress_helplessness",
+    "q": "2. In the last month, how often have you felt that you were unable to control the important things in your life?",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Never"
+      },
+      {
+        "v": 1,
+        "l": "Almost never"
+      },
+      {
+        "v": 2,
+        "l": "Sometimes"
+      },
+      {
+        "v": 3,
+        "l": "Fairly often"
+      },
+      {
+        "v": 4,
+        "l": "Very often"
+      }
+    ]
+  },
+  "pss_4": {
+    "c": "pss_self_efficacy",
+    "n": "stress_self_efficacy",
+    "q": "4. In the last month, how often have you felt confident about your ability to handle your personal problems?",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Never"
+      },
+      {
+        "v": 1,
+        "l": "Almost never"
+      },
+      {
+        "v": 2,
+        "l": "Sometimes"
+      },
+      {
+        "v": 3,
+        "l": "Fairly often"
+      },
+      {
+        "v": 4,
+        "l": "Very often"
+      }
+    ]
+  },
+  "pss_5": {
+    "c": "pss_self_efficacy",
+    "n": "stress_self_efficacy",
+    "q": "5. In the last month, how often have you felt that things were going your way?",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Never"
+      },
+      {
+        "v": 1,
+        "l": "Almost never"
+      },
+      {
+        "v": 2,
+        "l": "Sometimes"
+      },
+      {
+        "v": 3,
+        "l": "Fairly often"
+      },
+      {
+        "v": 4,
+        "l": "Very often"
+      }
+    ]
+  },
+  "pss_10": {
+    "c": "pss_helplessness",
+    "n": "stress_helplessness",
+    "q": "10. In the last month, how often have you felt difficulties were piling up so high that you could not overcome them?",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Never"
+      },
+      {
+        "v": 1,
+        "l": "Almost never"
+      },
+      {
+        "v": 2,
+        "l": "Sometimes"
+      },
+      {
+        "v": 3,
+        "l": "Fairly often"
+      },
+      {
+        "v": 4,
+        "l": "Very often"
+      }
+    ]
+  },
+  "sleep_hours": {
+    "c": "sleep_hours",
+    "n": "sleep_quality",
+    "q": "During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spent in bed.)",
+    "range": {
+      "min": 0,
+      "max": 12,
+      "unit": "hours"
+    }
+  },
+  "sleep_quality_rating": {
+    "c": "sleep_quality_rating",
+    "n": "sleep_quality",
+    "q": "During the past month, how would you rate your sleep quality overall?",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Very good"
+      },
+      {
+        "v": 1,
+        "l": "Fairly good"
+      },
+      {
+        "v": 2,
+        "l": "Fairly bad"
+      },
+      {
+        "v": 3,
+        "l": "Very bad"
+      }
+    ]
+  },
+  "sleep_latency_mins": {
+    "c": "sleep_latency_mins",
+    "n": "sleep_quality",
+    "q": "During the past month, how long (in minutes) has it usually taken you to fall asleep each night?",
+    "range": {
+      "min": 0,
+      "max": 120,
+      "unit": "min"
+    }
+  },
+  "sleep_trouble_30min": {
+    "c": "sleep_disturbances",
+    "n": "sleep_disturbances",
+    "q": "a. Cannot get to sleep within 30 minutes",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not in past month"
+      },
+      {
+        "v": 1,
+        "l": "Less than once/week"
+      },
+      {
+        "v": 2,
+        "l": "Once or twice/week"
+      },
+      {
+        "v": 3,
+        "l": "3+ times/week"
+      }
+    ]
+  },
+  "sleep_wakeup": {
+    "c": "sleep_disturbances",
+    "n": "sleep_disturbances",
+    "q": "b. Wake up in the middle of the night or early morning",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not in past month"
+      },
+      {
+        "v": 1,
+        "l": "Less than once/week"
+      },
+      {
+        "v": 2,
+        "l": "Once or twice/week"
+      },
+      {
+        "v": 3,
+        "l": "3+ times/week"
+      }
+    ]
+  },
+  "sleep_cough_snore": {
+    "c": "sleep_disturbances",
+    "n": "sleep_disturbances",
+    "q": "e. Cough or snore loudly",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not in past month"
+      },
+      {
+        "v": 1,
+        "l": "Less than once/week"
+      },
+      {
+        "v": 2,
+        "l": "Once or twice/week"
+      },
+      {
+        "v": 3,
+        "l": "3+ times/week"
+      }
+    ]
+  },
+  "sleep_bad_dreams": {
+    "c": "sleep_disturbances",
+    "n": "sleep_disturbances",
+    "q": "h. Have bad dreams",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not in past month"
+      },
+      {
+        "v": 1,
+        "l": "Less than once/week"
+      },
+      {
+        "v": 2,
+        "l": "Once or twice/week"
+      },
+      {
+        "v": 3,
+        "l": "3+ times/week"
+      }
+    ]
+  },
+  "pain_during_sleep": {
+    "c": "sleep_disturbances",
+    "n": "sleep_disturbances",
+    "q": "i. Have pain",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not in past month"
+      },
+      {
+        "v": 1,
+        "l": "Less than once/week"
+      },
+      {
+        "v": 2,
+        "l": "Once or twice/week"
+      },
+      {
+        "v": 3,
+        "l": "3+ times/week"
+      }
+    ]
+  },
+  "low_enthusiasm": {
+    "c": "sleep_disturbances",
+    "n": "sleep_disturbances",
+    "q": "During the past month, how much of a problem has it been for you to keep up enthusiasm to get things done?",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not in past month"
+      },
+      {
+        "v": 1,
+        "l": "Less than once/week"
+      },
+      {
+        "v": 2,
+        "l": "Once or twice/week"
+      },
+      {
+        "v": 3,
+        "l": "3+ times/week"
+      }
+    ]
+  },
+  "panas_scared": {
+    "c": "panas_na",
+    "n": "negative_affect",
+    "q": "Scared",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Very slightly/Not at all"
+      },
+      {
+        "v": 2,
+        "l": "A little"
+      },
+      {
+        "v": 3,
+        "l": "Moderately"
+      },
+      {
+        "v": 4,
+        "l": "Quite a bit"
+      },
+      {
+        "v": 5,
+        "l": "Extremely"
+      }
+    ]
+  },
+  "panas_enthusiastic": {
+    "c": "panas_pa",
+    "n": "positive_affect",
+    "q": "Enthusiastic",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Very slightly/Not at all"
+      },
+      {
+        "v": 2,
+        "l": "A little"
+      },
+      {
+        "v": 3,
+        "l": "Moderately"
+      },
+      {
+        "v": 4,
+        "l": "Quite a bit"
+      },
+      {
+        "v": 5,
+        "l": "Extremely"
+      }
+    ]
+  },
+  "panas_inspired": {
+    "c": "panas_pa",
+    "n": "positive_affect",
+    "q": "Inspired",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Very slightly/Not at all"
+      },
+      {
+        "v": 2,
+        "l": "A little"
+      },
+      {
+        "v": 3,
+        "l": "Moderately"
+      },
+      {
+        "v": 4,
+        "l": "Quite a bit"
+      },
+      {
+        "v": 5,
+        "l": "Extremely"
+      }
+    ]
+  },
+  "panas_guilty": {
+    "c": "panas_na",
+    "n": "negative_affect",
+    "q": "Guilty",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Very slightly/Not at all"
+      },
+      {
+        "v": 2,
+        "l": "A little"
+      },
+      {
+        "v": 3,
+        "l": "Moderately"
+      },
+      {
+        "v": 4,
+        "l": "Quite a bit"
+      },
+      {
+        "v": 5,
+        "l": "Extremely"
+      }
+    ]
+  },
+  "panas_hostile": {
+    "c": "panas_na",
+    "n": "negative_affect",
+    "q": "Hostile",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Very slightly/Not at all"
+      },
+      {
+        "v": 2,
+        "l": "A little"
+      },
+      {
+        "v": 3,
+        "l": "Moderately"
+      },
+      {
+        "v": 4,
+        "l": "Quite a bit"
+      },
+      {
+        "v": 5,
+        "l": "Extremely"
+      }
+    ]
+  },
+  "lonely_2": {
+    "c": "lonely_total",
+    "n": "loneliness",
+    "q": "2. I lack companionship",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Never"
+      },
+      {
+        "v": 2,
+        "l": "Rarely"
+      },
+      {
+        "v": 3,
+        "l": "Sometimes"
+      },
+      {
+        "v": 4,
+        "l": "Often"
+      }
+    ]
+  },
+  "lonely_11": {
+    "c": "lonely_total",
+    "n": "loneliness",
+    "q": "11. I feel left out",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Never"
+      },
+      {
+        "v": 2,
+        "l": "Rarely"
+      },
+      {
+        "v": 3,
+        "l": "Sometimes"
+      },
+      {
+        "v": 4,
+        "l": "Often"
+      }
+    ]
+  },
+  "lonely_14": {
+    "c": "lonely_total",
+    "n": "loneliness",
+    "q": "14. I feel isolated from others",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Never"
+      },
+      {
+        "v": 2,
+        "l": "Rarely"
+      },
+      {
+        "v": 3,
+        "l": "Sometimes"
+      },
+      {
+        "v": 4,
+        "l": "Often"
+      }
+    ]
+  },
+  "vr_general_health": {
+    "c": "vr_physical_health",
+    "n": "physical_health",
+    "q": "In general, would you say your health is",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Excellent"
+      },
+      {
+        "v": 2,
+        "l": "Very good"
+      },
+      {
+        "v": 3,
+        "l": "Good"
+      },
+      {
+        "v": 4,
+        "l": "Fair"
+      }
+    ]
+  },
+  "vr_moderate_activity": {
+    "c": "vr_physical_health",
+    "n": "physical_health",
+    "q": "Moderate activities, such as moving a table, pushing a vacuum cleaner, bowling or playing golf?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes, limited a lot"
+      },
+      {
+        "v": 2,
+        "l": "Yes, limited a little"
+      },
+      {
+        "v": 3,
+        "l": "No, not limited"
+      }
+    ]
+  },
+  "vr_physical_limit_work": {
+    "c": "vr_physical_health",
+    "n": "physical_health",
+    "q": "Accomplished less than you would like.",
+    "opts": [
+      {
+        "v": 1,
+        "l": "All the time"
+      },
+      {
+        "v": 2,
+        "l": "Most of the time"
+      },
+      {
+        "v": 3,
+        "l": "Some of the time"
+      },
+      {
+        "v": 4,
+        "l": "A little of the time"
+      },
+      {
+        "v": 5,
+        "l": "None of the time"
+      }
+    ]
+  },
+  "vr_emotional_limit_work": {
+    "c": "vr_mental_health",
+    "n": "mental_health",
+    "q": "Accomplished less than you would like..1",
+    "opts": [
+      {
+        "v": 1,
+        "l": "All the time"
+      },
+      {
+        "v": 2,
+        "l": "Most of the time"
+      },
+      {
+        "v": 3,
+        "l": "Some of the time"
+      },
+      {
+        "v": 4,
+        "l": "A little of the time"
+      },
+      {
+        "v": 5,
+        "l": "None of the time"
+      }
+    ]
+  },
+  "vr_emotional_limit_care": {
+    "c": "vr_mental_health",
+    "n": "mental_health",
+    "q": "Didn't do work or other activities as carefully as usual.",
+    "opts": [
+      {
+        "v": 1,
+        "l": "All the time"
+      },
+      {
+        "v": 2,
+        "l": "Most of the time"
+      },
+      {
+        "v": 3,
+        "l": "Some of the time"
+      },
+      {
+        "v": 4,
+        "l": "A little of the time"
+      },
+      {
+        "v": 5,
+        "l": "None of the time"
+      }
+    ]
+  },
+  "vr_pain_interference": {
+    "c": "vr_physical_health",
+    "n": "physical_health",
+    "q": "During the past 4 weeks, how much did pain interfere with your normal work (including both work outside the home and housework)?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Not at all"
+      },
+      {
+        "v": 2,
+        "l": "A little bit"
+      },
+      {
+        "v": 3,
+        "l": "Moderately"
+      },
+      {
+        "v": 4,
+        "l": "Quite a bit"
+      },
+      {
+        "v": 5,
+        "l": "Extremely"
+      }
+    ]
+  },
+  "vr_energy": {
+    "c": "vr_mental_health",
+    "n": "mental_health",
+    "q": "How much of the time during the past 4 weeks: Did you have a lot of energy?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "All the time"
+      },
+      {
+        "v": 2,
+        "l": "Most of the time"
+      },
+      {
+        "v": 3,
+        "l": "A good bit"
+      },
+      {
+        "v": 4,
+        "l": "Some of the time"
+      },
+      {
+        "v": 5,
+        "l": "A little"
+      },
+      {
+        "v": 6,
+        "l": "None of the time"
+      }
+    ]
+  },
+  "vr_downhearted": {
+    "c": "vr_mental_health",
+    "n": "mental_health",
+    "q": "How much of the time during the past 4 weeks: Have you felt downhearted and blue?",
+    "opts": [
+      {
+        "v": 0,
+        "l": "All the time"
+      },
+      {
+        "v": 1,
+        "l": "Most of the time"
+      },
+      {
+        "v": 2,
+        "l": "Some of the time"
+      },
+      {
+        "v": 3,
+        "l": "A little of the time"
+      },
+      {
+        "v": 4,
+        "l": "None of the time"
+      }
+    ]
+  },
+  "vr_social_interference": {
+    "c": "vr_mental_health",
+    "n": "mental_health",
+    "q": "During the past 4 weeks, how much of the time has your physical health or emotional problems interfered with your social activities (like visiting with friends, relatives, etc.)?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "All the time"
+      },
+      {
+        "v": 2,
+        "l": "Most of the time"
+      },
+      {
+        "v": 3,
+        "l": "Some of the time"
+      },
+      {
+        "v": 4,
+        "l": "A little of the time"
+      },
+      {
+        "v": 5,
+        "l": "None of the time"
+      }
+    ]
+  },
+  "e_talkative": {
+    "c": "extraversion",
+    "n": "extraversion",
+    "q": "I see myself as someone who...   - 1. Is talkative",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "n_depressed": {
+    "c": "neuroticism",
+    "n": "neuroticism",
+    "q": "I see myself as someone who...   - 4. Is depressed, blue",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "e_reserved_r": {
+    "c": "extraversion",
+    "n": "extraversion",
+    "q": "I see myself as someone who...   - 6. Is reserved",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "n_tense": {
+    "c": "neuroticism",
+    "n": "neuroticism",
+    "q": "I see myself as someone who...   - 14. Can be tense",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "n_worries": {
+    "c": "neuroticism",
+    "n": "neuroticism",
+    "q": "I see myself as someone who...   - 19. Worries a lot",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "e_quiet_r": {
+    "c": "extraversion",
+    "n": "extraversion",
+    "q": "I see myself as someone who...   - 21. Tends to be quiet",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "n_stable_r": {
+    "c": "neuroticism",
+    "n": "neuroticism",
+    "q": "I see myself as someone who...   - 24. Is emotionally stable, not easily upset",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "n_moody": {
+    "c": "neuroticism",
+    "n": "neuroticism",
+    "q": "I see myself as someone who...   - 29. Can be moody",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "e_sociable": {
+    "c": "extraversion",
+    "n": "extraversion",
+    "q": "I see myself as someone who...   - 36. Is outgoing, sociable",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "n_nervous": {
+    "c": "neuroticism",
+    "n": "neuroticism",
+    "q": "I see myself as someone who...   - 39. Gets nervous easily",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Disagree strongly"
+      },
+      {
+        "v": 2,
+        "l": "Disagree a little"
+      },
+      {
+        "v": 3,
+        "l": "Neither"
+      },
+      {
+        "v": 4,
+        "l": "Agree a little"
+      },
+      {
+        "v": 5,
+        "l": "Agree strongly"
+      }
+    ]
+  },
+  "DMDMARTL": {
+    "c": "marital_status",
+    "n": "marital_status",
+    "q": "Marital status",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Married"
+      },
+      {
+        "v": 2,
+        "l": "Widowed"
+      },
+      {
+        "v": 3,
+        "l": "Divorced"
+      },
+      {
+        "v": 4,
+        "l": "Separated"
+      },
+      {
+        "v": 5,
+        "l": "Never married"
+      },
+      {
+        "v": 6,
+        "l": "Living with partner"
+      }
+    ]
+  },
+  "SMQ040": {
+    "c": "smoking",
+    "n": "smoking",
+    "q": "Do you now smoke cigarettes?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Every day"
+      },
+      {
+        "v": 2,
+        "l": "Some days"
+      },
+      {
+        "v": 3,
+        "l": "Not at all"
+      }
+    ]
+  },
+  "SMD650": {
+    "c": "SMD650",
+    "n": "smoking",
+    "q": "Avg # cigarettes/day during past 30 days",
+    "range": {
+      "min": 0,
+      "max": 60,
+      "unit": "cigarettes/day"
+    }
+  },
+  "ALQ121": {
+    "c": "ALQ121",
+    "n": "alcohol_use",
+    "q": "Past 12 mo how often have alcohol drink",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Never"
+      },
+      {
+        "v": 1,
+        "l": "Every day"
+      },
+      {
+        "v": 2,
+        "l": "Nearly every day"
+      },
+      {
+        "v": 3,
+        "l": "3-4 times/week"
+      },
+      {
+        "v": 4,
+        "l": "2 times/week"
+      },
+      {
+        "v": 5,
+        "l": "Once/week"
+      },
+      {
+        "v": 6,
+        "l": "2-3 times/month"
+      },
+      {
+        "v": 7,
+        "l": "Once/month"
+      },
+      {
+        "v": 8,
+        "l": "7-11 times/year"
+      },
+      {
+        "v": 9,
+        "l": "3-6 times/year"
+      },
+      {
+        "v": 10,
+        "l": "1-2 times/year"
+      }
+    ]
+  },
+  "ALQ130": {
+    "c": "ALQ130",
+    "n": "alcohol_use",
+    "q": "Avg # alcohol drinks/day - past 12 mos",
+    "range": {
+      "min": 0,
+      "max": 15,
+      "unit": "drinks/day"
+    }
+  },
+  "ALQ142": {
+    "c": "ALQ142",
+    "n": "alcohol_use",
+    "q": "# days have 4 or 5 drinks/past 12 mos",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Never"
+      },
+      {
+        "v": 1,
+        "l": "Every day"
+      },
+      {
+        "v": 2,
+        "l": "Nearly every day"
+      },
+      {
+        "v": 3,
+        "l": "3-4 times/week"
+      },
+      {
+        "v": 4,
+        "l": "2 times/week"
+      },
+      {
+        "v": 5,
+        "l": "Once/week"
+      },
+      {
+        "v": 6,
+        "l": "2-3 times/month"
+      },
+      {
+        "v": 7,
+        "l": "Once/month"
+      },
+      {
+        "v": 8,
+        "l": "7-11 times/year"
+      },
+      {
+        "v": 9,
+        "l": "3-6 times/year"
+      },
+      {
+        "v": 10,
+        "l": "1-2 times/year"
+      }
+    ]
+  },
+  "CDQ001": {
+    "c": "pain_level",
+    "n": "pain_level",
+    "q": "SP ever had pain or discomfort in chest",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "CDQ010": {
+    "c": "pain_level",
+    "n": "pain_level",
+    "q": "Shortness of breath on stairs/inclines",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "HSD010": {
+    "c": "general_health",
+    "n": "general_health",
+    "q": "General health condition",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Excellent"
+      },
+      {
+        "v": 2,
+        "l": "Very good"
+      },
+      {
+        "v": 3,
+        "l": "Good"
+      },
+      {
+        "v": 4,
+        "l": "Fair"
+      },
+      {
+        "v": 5,
+        "l": "Poor"
+      }
+    ]
+  },
+  "DIQ010": {
+    "c": "diabetes_status",
+    "n": "diabetes_status",
+    "q": "Doctor told you have diabetes",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      },
+      {
+        "v": 3,
+        "l": "Borderline"
+      }
+    ]
+  },
+  "DIQ160": {
+    "c": "diabetes_status",
+    "n": "diabetes_status",
+    "q": "Ever told you have prediabetes",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "DIQ050": {
+    "c": "diabetes_status",
+    "n": "diabetes_status",
+    "q": "Taking insulin now",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ160A": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Doctor ever said you had arthritis",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ160N": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Doctor ever told you that you had gout?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ160C": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Ever told you had coronary heart disease",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ160E": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Ever told you had heart attack",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ160M": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Ever told you had thyroid problem",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ160O": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Ever told you had COPD?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ520": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Abdominal pain during past 12 months?",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "MCQ080": {
+    "c": "chronic_condition",
+    "n": "chronic_condition",
+    "q": "Doctor ever said you were overweight",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Yes"
+      },
+      {
+        "v": 2,
+        "l": "No"
+      }
+    ]
+  },
+  "DPQ010": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Have little interest in doing things",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ020": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Feeling down, depressed, or hopeless",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ030": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Trouble sleeping or sleeping too much",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ040": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Feeling tired or having little energy",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ050": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Poor appetite or overeating",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ060": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Feeling bad about yourself",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ070": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Trouble concentrating on things",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ080": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Moving or speaking slowly or too fast",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ090": {
+    "c": "phq_total",
+    "n": "depression",
+    "q": "Thought you would be better off dead",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not at all"
+      },
+      {
+        "v": 1,
+        "l": "Several days"
+      },
+      {
+        "v": 2,
+        "l": "More than half the days"
+      },
+      {
+        "v": 3,
+        "l": "Nearly every day"
+      }
+    ]
+  },
+  "DPQ100": {
+    "c": "DPQ100",
+    "n": "depression",
+    "q": "Difficulty these problems have caused",
+    "opts": [
+      {
+        "v": 0,
+        "l": "Not difficult at all"
+      },
+      {
+        "v": 1,
+        "l": "Somewhat difficult"
+      },
+      {
+        "v": 2,
+        "l": "Very difficult"
+      },
+      {
+        "v": 3,
+        "l": "Extremely difficult"
+      }
+    ]
+  },
+  "PAQ610": {
+    "c": "PAQ610",
+    "n": "exercise",
+    "q": "Number of days vigorous work",
+    "range": {
+      "min": 0,
+      "max": 7,
+      "unit": "days/week"
+    }
+  },
+  "PAD615": {
+    "c": "PAD615",
+    "n": "exercise",
+    "q": "Minutes vigorous-intensity work",
+    "range": {
+      "min": 0,
+      "max": 840,
+      "unit": "min/week"
+    }
+  },
+  "PAD630": {
+    "c": "PAD630",
+    "n": "exercise",
+    "q": "Minutes moderate-intensity work",
+    "range": {
+      "min": 0,
+      "max": 840,
+      "unit": "min/week"
+    }
+  },
+  "PAD645": {
+    "c": "PAD645",
+    "n": "exercise",
+    "q": "Minutes walk/bicycle for transportation",
+    "range": {
+      "min": 0,
+      "max": 840,
+      "unit": "min/week"
+    }
+  },
+  "PAD660": {
+    "c": "PAD660",
+    "n": "exercise",
+    "q": "Minutes vigorous recreational activities",
+    "range": {
+      "min": 0,
+      "max": 840,
+      "unit": "min/week"
+    }
+  },
+  "EDUCATION": {
+    "c": "education_level",
+    "n": "education_level",
+    "q": "Education level — merged from DMDEDUC2 (adults 20+) and DMDEDUC3 (youth 6-19)",
+    "opts": [
+      {
+        "v": 1,
+        "l": "Less than 9th grade"
+      },
+      {
+        "v": 2,
+        "l": "9-11th grade"
+      },
+      {
+        "v": 3,
+        "l": "High school graduate / GED"
+      },
+      {
+        "v": 4,
+        "l": "Some college or AA degree"
+      },
+      {
+        "v": 5,
+        "l": "College graduate or above"
+      }
+    ]
+  }
+}

@@ -1,0 +1,132 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Gliimr — Apricot Sorbet x Muted Eucalyptus palette */
+  --background:        #0B0E14;
+  --foreground:        #FFFFFF;
+  --card:              #13171F;
+  --card-foreground:   #FFFFFF;
+  --popover:           #13171F;
+  --popover-foreground:#FFFFFF;
+  --primary:           #FB923C;   /* Apricot Sorbet */
+  --primary-foreground:#000000;
+  --secondary:         #2D7A7F;   /* Muted Eucalyptus */
+  --secondary-foreground:#FFFFFF;
+  --accent:            #FDE68A;   /* Warm Sand */
+  --accent-foreground: #0B0E14;
+  --muted:             #1A1F27;
+  --muted-foreground:  #7A8494;
+  --elevated:          #1E232B;
+  --destructive:       #FF4D4D;
+  --destructive-foreground:#FFFFFF;
+  --border:            #22262D;
+  --input:             #1A1F27;
+  --ring:              #FB923C;
+  --radius:            1rem;
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Inter Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-card:               var(--card);
+  --color-card-foreground:    var(--card-foreground);
+  --color-popover:            var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary:            var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary:          var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-accent:             var(--accent);
+  --color-accent-foreground:  var(--accent-foreground);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-elevated:           var(--elevated);
+  --color-destructive:        var(--destructive);
+  --color-destructive-foreground:var(--destructive-foreground);
+  --color-border:             var(--border);
+  --color-input:              var(--input);
+  --color-ring:               var(--ring);
+  --radius-sm:  calc(var(--radius) - 4px);
+  --radius-md:  calc(var(--radius) - 2px);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) + 8px);
+  --radius-2xl: calc(var(--radius) + 16px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html, body {
+    background-color: #0B0E14;
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    height: 100%;
+    overflow: hidden;
+  }
+  #__next, main { height: 100%; }
+  input, textarea { caret-color: #FB923C; }
+  ::-webkit-scrollbar { width: 0px; }
+}
+
+/* Glassmorphism nav */
+.glass-nav {
+  background: rgba(11, 14, 20, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(251, 146, 60, 0.15);
+}
+
+/* Gradient loading ring */
+@keyframes gradient-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes ring-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(251,146,60,0.45)) drop-shadow(0 0 8px rgba(45,122,127,0.3)); }
+  33%       { filter: drop-shadow(0 0 8px rgba(251,146,60,0.75)) drop-shadow(0 0 14px rgba(251,146,60,0.35)); }
+  66%       { filter: drop-shadow(0 0 8px rgba(253,230,138,0.65)) drop-shadow(0 0 14px rgba(45,122,127,0.45)); }
+}
+.gradient-ring {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  /* More stops = smoother colour blending around the ring */
+  background: conic-gradient(
+    from 0deg,
+    #FB923C 0%,
+    #FBAC5C 10%,
+    #FBBA72 20%,
+    #FCC88A 30%,
+    #FDE68A 40%,
+    #C5DAA0 50%,
+    #9EC9CB 60%,
+    #6AAEB5 70%,
+    #2D7A7F 80%,
+    #4E8E93 90%,
+    #FB923C 100%
+  );
+  /* Slightly wider mask gap = cleaner ring edge without jagged pixels */
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+  mask:         radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
+  animation: gradient-spin 1.6s linear infinite, ring-glow 2.4s ease-in-out infinite;
+}
+
+/* Vertical slide placeholder */
+@keyframes slideUp {
+  0%   { transform: translateY(100%); opacity: 0; }
+  15%  { transform: translateY(0);    opacity: 1; }
+  85%  { transform: translateY(0);    opacity: 1; }
+  100% { transform: translateY(-100%);opacity: 0; }
+}
+.placeholder-slide {
+  animation: slideUp 4s ease-in-out infinite;
+}

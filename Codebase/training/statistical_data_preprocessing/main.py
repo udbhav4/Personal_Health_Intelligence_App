@@ -24,6 +24,7 @@ from data_cleaning_pruning_lifesnaps   import load_lifesnaps, clean_lifesnaps, p
 from data_harmonization                import harmonize_nhanes, harmonize_studentlife, harmonize_lifesnaps
 from data_normalization                import normalize_per_user
 from data_discretization               import run_discretization, clear_kmeans_config
+from export_population_norm_stats      import export_population_norm_stats
 from build_column_question_map         import build_map
 from data_likelihood_tables            import build_likelihoods
 from data_nhanes_priors                import build_priors
@@ -52,24 +53,22 @@ def run_nhanes() -> pd.DataFrame:
 
 
 def run_studentlife() -> pd.DataFrame:
+    """Load, clean, prune, and harmonize StudentLife (no normalize — called from run_all)."""
     print('\n=== StudentLife ===')
     df = load_studentlife()
     df = clean_studentlife(df)
     df = prune_studentlife(df)
     df = harmonize_studentlife(df)
-    df = normalize_per_user(df)
-    _save(df, 'studentlife_preprocessed.csv')
     return df
 
 
 def run_lifesnaps() -> pd.DataFrame:
+    """Load, clean, prune, and harmonize LifeSnaps (no normalize — called from run_all)."""
     print('\n=== LifeSnaps ===')
     df = load_lifesnaps()
     df = clean_lifesnaps(df)
     df = prune_lifesnaps(df)
     df = harmonize_lifesnaps(df)
-    df = normalize_per_user(df)
-    _save(df, 'lifesnaps_preprocessed.csv')
     return df
 
 
@@ -77,6 +76,22 @@ def run_all() -> tuple:
     nhanes_df = run_nhanes()
     sl_df     = run_studentlife()
     ls_df     = run_lifesnaps()
+
+    # ── Export population norm stats ────────────────────────────────
+    # Must run on the pooled harmonized data (before normalization) so that
+    # population mean/std reflect raw sensor distributions across all users.
+    # normalize_per_user (below) will load and apply these stats.
+    print('\n=== Export Population Norm Stats ===')
+    combined_harmonized = pd.concat([nhanes_df, sl_df, ls_df], ignore_index=True)
+    export_population_norm_stats(combined_harmonized)
+
+    # ── Normalize (population z-score for sensor cols, per-user for rest)
+    print('\n=== Normalize ===')
+    sl_df = normalize_per_user(sl_df)
+    _save(sl_df, 'studentlife_preprocessed.csv')
+    ls_df = normalize_per_user(ls_df)
+    _save(ls_df, 'lifesnaps_preprocessed.csv')
+
     print('\n=== Step 5: Discretization ===')
     clear_kmeans_config()
     run_discretization()

@@ -6,7 +6,7 @@ Usage:
   python visualize_bn.py --struct dbn_structure.json
 
 Reads:  configs/<struct>.json + configs/feature_node_config.json
-Writes: visualizations/<struct>_img.png
+Writes: DBN_visualizations/<struct>_img.png
 
 Node colour (blue-cyan theme — cohesive with edges and atmosphere):
   Cat1 (sensor / objective)  — deep royal blue   #1565c0
@@ -39,7 +39,7 @@ import numpy as np
 _ROOT   = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 _CONFIG = os.path.join(_ROOT, 'configs', 'feature_node_config.json')
 _STRUCT  = os.path.join(_ROOT, 'configs', 'dbn_structure.json')
-_OUT_IMG = os.path.join(_ROOT, 'visualizations', 'dbn_structure_img.png')
+_OUT_IMG = os.path.join(_ROOT, 'DBN_visualizations', 'dbn_structure_img.png')
 
 _BG = '#020408'
 _CAT_COLOR = {
@@ -317,7 +317,7 @@ def visualize(struct_path, out_path):
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     fig.savefig(out_path, dpi=180, bbox_inches='tight')
     plt.close(fig)
-    print(f'Saved → {out_path}')
+    print(f'Saved -> {out_path}')
 
 
 if __name__ == '__main__':
