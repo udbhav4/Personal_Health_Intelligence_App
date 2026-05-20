@@ -8,7 +8,7 @@ Gliimr is a React Native health app that passively senses how you live, extracts
 
 ## ▶ [Watch Gliimr in Action](https://drive.google.com/file/d/1qspJu6YrjWRFTmhPsY4TH8R_6bGi6Vto/view?usp=drive_link)
 
-> **[→ Live Demo Video](https://drive.google.com/file/d/1qspJu6YrjWRFTmhPsY4TH8R_6bGi6Vto/view?usp=drive_link)** - See the full pipeline in action: passive sensing, natural-language NLU, DBN inference, and Doctor Report generation.
+> **[→ Live Demo Video](https://drive.google.com/file/d/1qspJu6YrjWRFTmhPsY4TH8R_6bGi6Vto/view?usp=drive_link)** - See the complete app in action.
 
 ---
 
